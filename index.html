@@ -1770,20 +1770,8 @@ async function extractPosRules() {
     });
   }
 
-  const extractPrompt = `You are reading the official Program of Studies for ${state.student.schoolName}, ${state.student.town}, ${state.student.state}.
-${state.posUrl && !state.posBase64 ? 'Retrieve and read the FULL document from: ' + state.posUrl : ''}
-${contentParts.length > 0 ? 'The Program of Studies PDF is attached.' : ''}
-
-Extract everything needed to build a precise, accurate academic plan. Your output will be used as the ONLY source of truth — no course can appear in the plan unless it exists in this document with its exact name.
-
-PART A — SCHEDULE STRUCTURE:
-Extract how the school's schedule works: how many core subject slots, how many elective slots, required PE/Health, total periods. This defines the exact shape of each year's schedule.
-
-PART B — EXACT COURSE NAMES (most important):
-List every single course offered, organized by department. Use the EXACT name as printed in the Program of Studies. Do not abbreviate, paraphrase, or combine. If the POS says "Honors English 10: American Literature" that is the name — not "Honors English 10".
-
-PART C — PREREQUISITES AND RULES:
-Extract every prerequisite, grade threshold, sequence requirement, AP cap, co-enrollment rule, biannual flag, and graduation requirement.
+  const extractPrompt = `Extract all course info from this Program of Studies for ${state.student.schoolName}.
+${state.posUrl && !state.posBase64 ? 'Read from: ' + state.posUrl : 'PDF attached.'}
 
 Return ONLY valid JSON with this exact structure:
 
@@ -2852,94 +2840,19 @@ async function generatePlan() {
 
     // ── Build the POS rules block ──
     const scheduleDesc = posRules?.scheduleStructure
-      ? `SCHEDULE STRUCTURE FROM POS:
-- Core subject slots (one per year, required): ${(posRules.scheduleStructure.coreSubjectSlots || []).join(' | ')}
-- Elective slots per year: ${posRules.scheduleStructure.electiveSlots || 2}
-- Required every year: ${(posRules.scheduleStructure.requiredSlots || []).join(', ')}
-- Total periods required per day: ${posRules.scheduleStructure.totalPeriodsPerDay || 7}
-- Double-period courses (count as 2 slots): ${(posRules.scheduleStructure.doublePeriodCourses || ['AP Physics C']).join(', ')}
-- Notes: ${posRules.scheduleStructure.notes || 'N/A'}
-
-STUDY HALL RULES — ENFORCE STRICTLY:
-- Maximum study halls per semester: ${posRules.scheduleStructure.studyHallRules?.maxStudyHallsPerSemester || 1}
-- Minimum courses required: ${posRules.scheduleStructure.studyHallRules?.minCoursesRequired || '6 courses plus PE/Health each semester'}
-- A student may add a study hall ONLY if they have fewer courses than the maximum and do NOT already have a study hall
-- A student may NOT have two study halls in the same semester under any circumstances
-- If a double-period course (e.g. AP Physics C) is scheduled, it occupies TWO elective/course slots in the schedule — account for this when counting total periods
-- If scheduling AP Physics C (7 credits, double period), the student effectively fills both elective slots with it plus has PE/Health — verify this does not leave them with only 5 academic courses, which would force an unwanted study hall
-
-EVERY GRADE PLAN MUST FOLLOW THIS STRUCTURE EXACTLY:
-Each year has exactly these slots:
-1. English (one course from the English department)
-2. Mathematics (one course from the Mathematics department)
-3. Science (one course from the Science department)
-4. Social Studies (one course from the Social Studies department)
-5. World Language (one course from the World Language department)
-6. Elective 1 (one approved elective — can be AP Seminar, AP Research, AP CS A, performing arts, etc.)
-7. Elective 2 (one approved elective — if AP Physics C is in Science slot, this slot is consumed by its lab period)
-8. Physical Education / Health (required each year)
-
-No more, no less. Every course must fit one of these slots.`
-      : `SCHEDULE STRUCTURE (standard NJ high school):
-Each year: English | Mathematics | Science | Social Studies | World Language | Elective 1 | Elective 2 | PE/Health
-AP SCIENCE STUDY HALL RULE: ONLY AP Biology, AP Chemistry, AP Environmental Science, AP Physics 1, AP Physics 2, AP Physics C require a study hall. AP Seminar, AP Statistics, AP Gov't, AP CS A and all other non-lab APs do NOT require a study hall.
-DOUBLE-PERIOD COURSES: AP Physics C meets two periods but still only requires the single study hall from the AP science rule.`;
-
+      ? `SCHEDULE: ${(posRules.scheduleStructure.coreSubjectSlots||['English','Math','Science','Social Studies','World Language']).join('|')} | Elective 1 | Elective 2 | PE/Health. AP lab sciences (Bio/Chem/Physics) require study hall replacing one elective. Max 1 study hall.`
+      : `SCHEDULE: English|Mathematics|Science|Social Studies|World Language|Elective 1|Elective 2|PE/Health. AP lab sciences require study hall.`
     const courseListBlock = posRules?.allCourses
-      ? `APPROVED COURSE LIST — ONLY USE NAMES FROM THIS LIST:
-You may ONLY recommend courses that appear in this list with their EXACT names as shown.
-Do not invent course names. Do not use shortened versions. If "AP English 11: Language & Composition" is the name, use that exactly.
-
-ENGLISH courses available:
-${(posRules.allCourses.english || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
-
-MATHEMATICS courses available:
-${(posRules.allCourses.mathematics || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
-
-SCIENCE courses available:
-${(posRules.allCourses.science || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
-
-SOCIAL STUDIES courses available:
-${(posRules.allCourses.socialStudies || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
-
-WORLD LANGUAGE — LATIN courses available:
-${(posRules.allCourses.worldLanguage?.latin || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
-
-WORLD LANGUAGE — SPANISH courses available:
-${(posRules.allCourses.worldLanguage?.spanish || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
-
-WORLD LANGUAGE — FRENCH courses available:
-${(posRules.allCourses.worldLanguage?.french || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
-
-ELECTIVES available (for elective slots only):
-${(posRules.allCourses.electives || []).map(c => `  [${c.level}] "${c.name}" (${c.department}) — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
-
-PHYSICAL EDUCATION / HEALTH:
-${(posRules.allCourses.physicalEducation || []).map(c => `  "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}`
-      : `COURSE LIST: Program of Studies not available — use general knowledge of course names for ${state.student.schoolName}.`;
-
+      ? 'APPROVED COURSES (use EXACT names):\n' + Object.entries(posRules.allCourses).map(([dept, courses]) =>
+          dept.toUpperCase() + ': ' + (Array.isArray(courses)
+            ? courses.map(c => c.name || c).join(', ')
+            : Object.values(courses).flat().map(c => c.name || c).join(', ')
+          )
+        ).join('\n')
+      : ''
     const rulesBlock = posRules
-      ? `GRADUATION REQUIREMENTS:
-${JSON.stringify(posRules.graduationRequirements, null, 2)}
-
-AP LIMITS BY GRADE:
-${JSON.stringify(posRules.apLimits, null, 2)}
-
-HONORS/AP CRITERIA:
-${JSON.stringify(posRules.honorsCriteria, null, 2)}
-
-COURSE SEQUENCES (must follow order):
-${JSON.stringify(posRules.courseSequences, null, 2)}
-
-CRITICAL HARD RULES — NEVER VIOLATE:
-${(posRules.criticalRules || []).join('\n')}
-
-INDIVIDUAL COURSE PREREQUISITES:
-${(posRules.courseRules || []).map(r =>
-  `"${r.course}": prereqs=[${(r.prerequisites||[]).join('; ')}] minGrade=${r.minGradeInPrereq||'—'} coreqs=[${(r.corequisites||[]).join('; ')||'none'}] grades=[${(r.gradesOffered||[]).join(',')}]${r.biannual?' BIANNUAL':''}${r.notes?' NOTE:'+r.notes:''}`
-).join('\n')}`
-      : '';
-
+      ? `AP LIMITS: ${JSON.stringify(posRules.apLimits||{})}\nSEQUENCES: ${(posRules.courseSequences||[]).map(s=>s.subject+': '+s.sequence?.join('→')).join(' | ')}\nKEY RULES: ${(posRules.criticalRules||[]).slice(0,5).join(' | ')}`
+      : ''
     const prompt = `${contentParts.length > 0 ? `Transcripts attached (${state.transcripts.map(t=>t.label||t.name).join(', ')}). Read ALL for complete course history.` : ''}
 
 STUDENT: ${state.student.firstName} ${state.student.lastName} | ${state.student.schoolName}, ${state.student.town} ${state.student.state} | Completed Grade ${state.student.currentGrade} | College Target: ${state.collegeTier} | Career: ${state.careerGoal||'Not specified'} | GPA: ${state.student.gpa||'N/A'}
