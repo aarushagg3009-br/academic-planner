@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2941,196 +2940,36 @@ ${(posRules.courseRules || []).map(r =>
 ).join('\n')}`
       : '';
 
-    const prompt = `You are an expert high school academic advisor. Build a precise academic plan.
-${contentParts.length > 0 ? `${state.transcripts.length} transcript document${state.transcripts.length > 1 ? 's are' : ' is'} attached above (${state.transcripts.map(t => t.label || t.name).join(', ')}). Read ALL of them to build a complete course history across all years.` : ''}
+    const prompt = `${contentParts.length > 0 ? `Transcripts attached (${state.transcripts.map(t=>t.label||t.name).join(', ')}). Read ALL for complete course history.` : ''}
 
-STUDENT:
-- Name: ${state.student.firstName} ${state.student.lastName}
-- School: ${state.student.schoolName}, ${state.student.town}, ${state.student.state}
-- Most Recent Grade Completed: ${state.student.currentGrade === '8' ? 'Grade 8 (entering 9th grade)' : 'Grade ' + state.student.currentGrade + ' (entering Grade ' + (parseInt(state.student.currentGrade)+1) + ')'}
-- GPA: ${state.student.gpa || 'Not provided'}
-- Interests: ${state.interests.join(', ') || 'Not specified'}
-- College Target: ${state.collegeTier}
-- Career Direction: ${state.careerGoal || 'Not specified'} ← THIS MUST DIRECTLY SHAPE SCIENCE AND ELECTIVE COURSE CHOICES. See CAREER TRACK COURSE REQUIREMENTS below.
-- Extracurriculars: ${state.student.extracurriculars || 'Not provided'}
-${state.student.manualGrades ? '- Manual grades:\n' + state.student.manualGrades : ''}
+STUDENT: ${state.student.firstName} ${state.student.lastName} | ${state.student.schoolName}, ${state.student.town} ${state.student.state} | Completed Grade ${state.student.currentGrade} | College Target: ${state.collegeTier} | Career: ${state.careerGoal||'Not specified'} | GPA: ${state.student.gpa||'N/A'}
 
-════════════════════════════════════════════
 ${scheduleDesc}
-════════════════════════════════════════════
 ${courseListBlock}
-════════════════════════════════════════════
 ${rulesBlock}
-════════════════════════════════════════════
 
-MANDATORY RULES — FOLLOW EVERY ONE:
+RULES:
+T1. Extract every course+grade from transcript. List in completedCourses. Never re-recommend them.
+T2. Plan grades: Completed G8→plan G9-12, G9→G10-12, G10→G11-12, G11→G12 only.
+T3. Check transcript grade before recommending AP/Honors: AP needs B- from Honors prereq or A- from CP. EXCEPTION: AP US History needs A- from Honors Global History 2, or A+ from CP Global History 2.
+T4. No duplicate courses across years.
 
-TRANSCRIPT RULES:
-T1. Read ALL attached transcripts carefully. Extract every completed and in-progress course with its grade.
-T2. NEVER recommend a course the student has already completed or is currently taking.
-T3. NEVER recommend the same course in two different future grade years.
-T4. CROSS-YEAR DUPLICATE CHECK: Scan all grade years — no course name appears more than once.
-T5. TRANSCRIPT DUPLICATE CHECK: Check every recommendation against completed transcript courses.
-T6. GRADE RANGE FOR PLAN — CRITICAL:
-    "Most Recent Grade Completed" means the student has FINISHED that grade. Plan starts from the NEXT grade.
-    - Completed Grade 8 → Plan: Grade 9, 10, 11, 12
-    - Completed Grade 9 → Plan: Grade 10, 11, 12
-    - Completed Grade 10 → Plan: Grade 11, 12
-    - Completed Grade 11 → Plan: Grade 12 only
-    All courses on the transcript are ALREADY DONE — never re-recommend them.
-T7. In completedCourses, list every course from the transcript with subject, course name, grade, and year.
-T8. PREREQUISITE GRADE QUALIFICATION — CRITICAL:
-    Before recommending any AP or Honors course, look up the student's actual grade in the prerequisite course from the transcript. Apply these grade thresholds:
-    - AP course from Honors prerequisite: student needs B- or better (general rule)
-    - AP course from CP prerequisite: student needs A- or better (general rule)
-    - Honors course from CP prerequisite: student needs B+ or better
-    - AP US HISTORY EXCEPTION (two thresholds, one course):
-        • From Honors Global History 2: A- or better → qualifies for AP US History
-        • From CP Global History 2: A+ only → qualifies for AP US History
-    - Examples:
-        • A- in Honors Global History 2 → qualifies for AP US History ✅
-        • B+ in Honors Global History 2 → does NOT qualify (below A-) → Honors US History
-        • A+ in CP Global History 2 → qualifies for AP US History ✅
-        • A in CP Global History 2 → does NOT qualify (needs A+) → Honors US History
+S1. Slots: English|Mathematics|Science|Social Studies|World Language|Elective 1|Elective 2|PE/Health.
+S2. Study Hall only for AP lab sciences (AP Bio/Chem/Physics 1/2/C/EnvSci) — replaces Elective 2. Max 1 study hall. No study hall for AP Seminar/Stats/Gov/CS/Lang/Calc.
+S3. Only use exact course names from the approved list. No invented names.
+S4. AP cap: Grade 10 max 2 APs. No APs in Grade 9.
+S5. Elective slots must have real specific named courses — no placeholders.
 
-SCHEDULE STRUCTURE RULES:
+RIDGE SEQUENCES:
+Social Studies: G9=Honors Global History 2, G10=Honors/AP US History (if qualified), G11=AP Gov't & Economics, G12=AP Economics.
+Physics: AP Physics 1 needs B- in Honors Chem + concurrent Precalc. AP Physics C needs AP Physics 1 or Honors Physics B-, + concurrent AP Calc.
+Latin biannual: ${(() => { const cg=parseInt(state.student.currentGrade)||10; const ey=parseInt(state.student.schoolYear)||2025; const r=[]; for(let g=cg+1;g<=12;g++){const y=ey+(g-(cg+1));r.push(`G${g}=${y%2===1?'AP Latin':'Adv Latin Lit(H)'}`);}; return r.join(', '); })()}
+Continue student's language from transcript (French→French, Spanish→Spanish etc). Never switch languages.
+AP Seminar in G10 for Ivy/Top20 students → AP Research in G11.
 
-S1. THE FIVE CORE SLOTS: English | Mathematics | Science | Social Studies | World Language. These are permanent UNLESS converted per S3.
+CAREER: ${state.careerGoal ? `For ${state.careerGoal} track: Medicine/Pre-Med MUST include AP Biology. Engineering MUST include AP Physics sequence. Law needs AP Gov + debate/law electives.` : 'Choose electives matching student interests.'}
 
-S2. ELECTIVE SLOTS: 2 elective slots per year by default. Hold real courses OR Study Hall (AP science only). Study Hall is NOT a subject — it occupies an elective slot (set slot="Elective 2", course="Study Hall").
-
-S3. TERMINAL COURSE CONVERSION: When a student has ALREADY COMPLETED (appears on uploaded transcript) the highest available course in a subject, that core slot converts to an additional elective in all plan years.
-    - AP Calculus BC on transcript → Mathematics slot becomes Elective 3 in all planned grades
-    - Full social studies sequence on transcript → Social Studies slot becomes elective
-    - If the terminal course is only being recommended in this plan (not yet completed), do NOT convert — the student still needs that subject slot for the terminal course itself.
-    - DO NOT suggest courses beyond the terminal course. AP Calc BC is Ridge's highest math — do not suggest Multivariable Calculus or any course not in the approved list.
-
-S4. AP SCIENCE STUDY HALL: ONLY these specific AP lab science courses require a Study Hall in place of one elective slot:
-    AP Biology, AP Chemistry, AP Environmental Science, AP Physics 1, AP Physics 2, AP Physics C
-    ALL OTHER AP courses do NOT require a study hall — including AP Seminar, AP Research, AP Statistics, AP Human Geography, AP Gov't, AP CS A, AP Lang, AP Lit, AP Calc, AP Economics, AP History, AP Latin, AP Psychology.
-    - 0 AP lab sciences: 2 elective slots (+ converted slots)
-    - 1 or 2 AP lab sciences: 1 Study Hall + 1 elective slot. Two AP lab sciences SHARE one study hall. Never two study halls.
-
-S5. MAX ONE STUDY HALL per year.
-
-S6. ELECTIVE SPECIFICITY: Every elective slot MUST have a real, specific, named course from the approved list. No placeholders.
-
-S7. NEVER suggest a course not in the approved course list.
-
-S8. NEVER schedule fewer than 6 academic courses + PE/Health.
-COURSE NAME RULES:
-N1. ONLY use course names that appear exactly in the approved course list above.
-N2. Use the EXACT name as listed — including any colons, subtitles, or qualifiers.
-N3. If you cannot find an exact match in the course list, do not recommend that course.
-N4. The "slot" field must be one of: English | Mathematics | Science | Social Studies | World Language | Elective 1 | Elective 2 | Elective 3 | Elective 4 | PE/Health. Study Hall is NEVER a slot name — when Study Hall is needed, use slot="Elective 2" and course="Study Hall".
-N5. Converted core slots use: slot="Elective 3" (math converted), slot="Elective 4" (social studies converted), etc.
-N6. ELECTIVE SPECIFICITY: For every elective slot, choose a course that directly serves the student's stated career direction and interests. Examples for a pre-law student: Speech and Debate, Introduction to Law, Law Seminar, Entrepreneurship. Examples for a STEM student: AP Computer Science A, AP Statistics, Introduction to Computer Programming, Game Design & Development. Never use a generic placeholder — always pick the most strategically appropriate specific course from the approved electives list.
-
-SEQUENCE AND PREREQUISITE RULES:
-P1. PHYSICS TRACK — CRITICAL: 
-    - AP Physics 1 prerequisites: A- in Enriched Chemistry OR B- in Honors Chemistry, AND concurrent enrollment in Precalculus or higher.
-    - Honors Physics prerequisites: A- in Enriched Chemistry OR B- in Honors Chemistry, AND concurrent enrollment in Algebra II or higher.
-    - For an Ivy League / Top-10 track student who meets the prerequisites, ALWAYS recommend AP Physics 1 over Honors Physics. AP Physics 1 carries AP weight, has a 100% pass rate at Ridge, and is the stronger signal.
-    - Honors Physics is only appropriate when the student does NOT qualify for AP Physics 1 (weaker math placement or lower chemistry grade).
-    - BOTH AP Physics 1 and Honors Physics with B- unlock AP Physics C the following year.
-    - PREFERRED Ivy-track sequence: Honors Chemistry (G10) → AP Physics 1 (G11) → AP Physics C (G12).
-P2. NEVER place AP Physics C unless student has completed AP Physics 1 OR Honors Physics with B- minimum AND co-enrolls in AP Calc AB or BC in the same year.
-P3. NEVER exceed AP cap per grade.
-P4. NEVER recommend a course in a grade it is not offered.
-P5. NEVER skip a prerequisite.
-P6. Show co-requisite courses in the same year.
-P7. BIANNUAL COURSES — LATIN (Ridge-specific):
-    - AP Latin runs in ODD start years: 2025-26 ✅, 2026-27 ❌, 2027-28 ✅, 2028-29 ❌ — level: AP
-    - Advanced Latin Literature runs in EVEN start years: 2025-26 ❌, 2026-27 ✅, 2027-28 ❌, 2028-29 ✅ — level: HONORS (NOT AP)
-    - Rule: if yearStart % 2 === 1 (odd number like 2025, 2027) → AP Latin. If yearStart % 2 === 0 (even like 2026, 2028) → Advanced Latin Literature.
-    - THIS STUDENT's correct Latin assignments (calculated from their completed grade):
-${(() => {
-  const cg = parseInt(state.student.currentGrade) || 10;
-  const startGrade = cg + 1;
-  const lines = [];
-  for (let g = startGrade; g <= 12; g++) {
-    const enteringYear = parseInt(state.student.schoolYear)||2025;
-    const yearStart = enteringYear + (g - (cg + 1));
-    const isAPLatin = yearStart % 2 === 1;
-    lines.push(`      Grade ${g} = ${yearStart}-${String(yearStart+1).slice(2)} (year start ${yearStart}, ${yearStart%2===1?'ODD':'EVEN'}) → ${isAPLatin ? 'AP Latin ✅' : 'Advanced Latin Literature ✅'}`);
-  }
-  return lines.join('\n');
-})()}
-    - NEVER place AP Latin in a year when it does not run. The code will also enforce this — but do not rely on it.
-
-SOCIAL STUDIES SEQUENCE (Ridge):
-G9 = Honors Global History 2
-G10 = Honors US History OR AP US History — BUT ONLY IF GRADE QUALIFIES (see below)
-G11 = AP US Gov't & Politics/Economics (required third social studies credit)
-G12 = AP Economics or other social studies elective
-
-AP US HISTORY PREREQUISITES (Ridge) — exact thresholds from Program of Studies:
-- From Honors Global History 2: **A-** or better → qualifies for AP US History in G10
-- From Honors Global History 2: below A- → does NOT qualify → take Honors US History
-- From CP Global History 2: **A+** only → qualifies for AP US History in G10
-- From CP Global History 2: below A+ → does NOT qualify → take Honors US History
-
-PREREQUISITE GRADE CHECK — CRITICAL:
-Before recommending ANY AP or Honors course, check the student's actual grade in the prerequisite course on their transcript.
-- If the student earned a C- in Honors Global History 2, they do NOT qualify for AP US History — recommend Honors US History instead
-- If the student earned a B+ in English 9 (not Honors), they do NOT qualify for AP Lang directly — must go through Honors English 10 first
-- NEVER recommend an AP course if the student's grade in the prerequisite falls below the minimum threshold
-- When in doubt, recommend the next Honors level rather than AP, and note the grade constraint
-
-CAREER TRACK COURSE REQUIREMENTS — MANDATORY:
-The student's career direction must directly shape which science and elective courses are recommended. Apply these rules based on the stated career goal:
-
-MEDICINE / PRE-MED / HEALTHCARE track:
-- AP Biology is NON-NEGOTIABLE. Every pre-med student MUST take AP Biology. It is the single most important AP course for medicine-track students. Place it in the Science slot at the earliest available year after prerequisites are met (typically G11 or G12).
-- Recommended science sequence: Honors Chemistry → AP Chemistry OR AP Biology → AP Biology (if not yet taken) OR AP Physics → AP Physics C
-- Strongly recommend AP Chemistry in addition to AP Biology if schedule allows
-- Elective recommendations: AP Statistics (data analysis for medicine), AP Psychology, Health Sciences electives if available
-
-ENGINEERING / CS track:
-- AP Computer Science A is strongly recommended
-- AP Physics sequence: AP Physics 1 → AP Physics C
-- AP Calculus BC is essential
-- Elective recommendations: AP Statistics, AP CS A, AP CS Principles
-
-LAW / PRE-LAW track:
-- AP US History and AP US Gov't are essential
-- Speech and Debate, Introduction to Law, Law Seminar
-- AP English Language is critical
-- Elective recommendations: AP Gov't, Intro to Law, Law Seminar, Speech and Debate
-
-BUSINESS / FINANCE track:
-- AP Economics is essential
-- AP Statistics is strongly recommended
-- Elective recommendations: Entrepreneurship, AP Macroeconomics, AP Statistics
-
-UNDECIDED / GENERAL:
-- Follow the standard sequence, maximize AP count and rigor appropriate to GPA
-
-WORLD LANGUAGE CONTINUITY — CRITICAL:
-Read the transcript carefully to identify which language the student has been studying. Continue THAT language through the plan.
-- If the transcript shows French courses → ALL World Language slots must be French courses
-- If the transcript shows Spanish → ALL World Language slots must be Spanish
-- If the transcript shows Latin → continue Latin sequence
-- NEVER switch languages mid-plan. A student who has been taking French does NOT suddenly take Latin.
-- The Ridge-specific Latin rules (AP Latin biannual schedule) only apply if the student is ACTUALLY studying Latin per their transcript.
-
-
-AP CAPSTONE DIPLOMA — CRITICAL FOR IVY-TRACK STUDENTS:
-The AP Capstone Diploma requires AP Seminar + AP Research + 4 other AP exams. It is rare, prestigious, and highly valued by Ivy League and Top-20 admissions.
-
-AP SEMINAR IN GRADE 10:
-- AP Seminar is available to Grade 10 students at Ridge and counts toward the sophomore 2-AP cap
-- For any student targeting Ivy League / Top 10 / Top 20 colleges, AP Seminar SHOULD be recommended as one of the two elective slots in Grade 10 UNLESS the student already has it on their transcript
-- AP Seminar prerequisite at Ridge: teacher recommendation (no grade threshold) — assume eligible unless transcript shows otherwise
-- AP Seminar does NOT require a study hall
-- If AP Seminar is recommended in Grade 10, AP Research MUST be recommended in Grade 11 as the follow-up elective
-
-AP RESEARCH IN GRADE 11:
-- AP Research requires successful completion of AP Seminar (with exam)
-- If AP Seminar appears on the transcript → AP Research is MANDATORY in Grade 11 as an elective
-- AP Research does NOT require a study hall
-
-If AP Seminar appears on transcript with passing grade and exam taken → AP Research MUST be recommended in the next available year. Flag prominently.
+ENTERING YEAR: ${state.student.schoolYear||2025}-${String(parseInt(state.student.schoolYear||2025)+1).slice(2)}
 
 Return ONLY valid JSON:
 {
