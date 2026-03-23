@@ -1,0 +1,3671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Academic Plan Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --navy:        #0d1f35;
+  --navy2:       #162b47;
+  --navy3:       #1e3a5f;
+  --cream:       #f4f8fc;
+  --cream2:      #e8f0f8;
+  --cream3:      #d6e4f0;
+  --gold:        #2b7fc4;
+  --gold2:       #5aaee8;
+  --gold-light:  #e8f4fd;
+  --teal:        #1a6fa8;
+  --teal-light:  #ddf0fc;
+  --green:       #1a6b4a;
+  --green-light: #e3f5ec;
+  --red:         #8b2020;
+  --red-light:   #fbeaea;
+  --purple:      #4a1d7a;
+  --purple-light:#f0eafc;
+  --orange:      #1a6fa8;
+  --orange-light:#ddf0fc;
+  --text:        #0d1f35;
+  --text2:       #2a3d58;
+  --text3:       #6a7d96;
+  --border:      #c8daea;
+  --shadow-sm:   0 1px 4px rgba(12,24,41,0.07);
+  --shadow:      0 4px 24px rgba(12,24,41,0.10);
+  --shadow-lg:   0 12px 48px rgba(12,24,41,0.16);
+  --r:           10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--navy);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.logo {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.2rem;
+  color: #fff;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo-accent {
+  width: 6px; height: 6px;
+  background: var(--gold);
+  border-radius: 50%;
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+.logo em {
+  font-style: normal;
+  color: var(--gold2);
+}
+
+/* Step indicator */
+.step-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.step-pip {
+  width: 28px; height: 3px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+  margin: 0 2px;
+  transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+  overflow: hidden;
+}
+
+.step-pip::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  width: 0;
+  background: var(--gold);
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+.step-pip.done::after { width: 100%; }
+.step-pip.active { background: rgba(255,255,255,0.2); }
+.step-pip.active::after { width: 60%; background: var(--gold2); animation: pulse-pip 1.5s ease-in-out infinite; }
+
+@keyframes pulse-pip {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ── LAYOUT ── */
+.app {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
+}
+
+/* ── PAGE TRANSITIONS ── */
+.step-header {
+  margin-bottom: 2.5rem;
+  animation: stepIn 0.45s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 2.25rem;
+  box-shadow: var(--shadow);
+  animation: stepIn 0.45s cubic-bezier(0.22,1,0.36,1) both;
+  margin-bottom: 1.25rem;
+}
+
+.card + .card { animation-delay: 0.05s; }
+
+@keyframes stepIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── STEP HEADER TYPOGRAPHY ── */
+.step-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.step-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 20px; height: 1px;
+  background: var(--gold);
+  opacity: 0.6;
+}
+
+.step-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--navy);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.step-subtitle {
+  font-size: 0.95rem;
+  color: var(--text3);
+  font-weight: 300;
+  max-width: 560px;
+  line-height: 1.6;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-bar {
+  height: 2px;
+  background: var(--cream3);
+  border-radius: 2px;
+  margin-bottom: 3rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--gold) 100%);
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── FORMS ── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.form-grid.single { grid-template-columns: 1fr; }
+.form-grid.thirds { grid-template-columns: 1fr 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 0.45rem; }
+.form-group.span2 { grid-column: span 2; }
+
+label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+input, select, textarea {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.93rem;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--cream3);
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--text);
+  transition: all 0.2s;
+  outline: none;
+  width: 100%;
+  font-weight: 400;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--teal);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(26,122,138,0.1);
+}
+
+input::placeholder, textarea::placeholder { color: var(--text3); }
+textarea { resize: vertical; min-height: 100px; }
+select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a8099' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
+
+/* ── UPLOAD ── */
+.upload-zone {
+  border: 2px dashed var(--cream3);
+  border-radius: var(--r);
+  padding: 2.5rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s;
+  background: var(--cream);
+  position: relative;
+}
+
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--teal);
+  background: var(--teal-light);
+}
+
+.upload-zone input[type="file"] {
+  position: absolute; inset: 0;
+  opacity: 0; cursor: pointer;
+  width: 100%; height: 100%;
+  border: none; padding: 0;
+}
+
+.upload-icon { font-size: 2.2rem; margin-bottom: 0.75rem; display: block; }
+.upload-label { font-weight: 500; color: var(--text2); margin-bottom: 0.25rem; font-size: 0.95rem; }
+.upload-hint { font-size: 0.8rem; color: var(--text3); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.88rem; font-weight: 600;
+  padding: 0.78rem 1.8rem;
+  border-radius: 8px; border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--navy);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(12,24,41,0.2);
+}
+
+.btn-primary:hover {
+  background: var(--navy2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(12,24,41,0.25);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text2);
+  border: 1.5px solid var(--border);
+}
+
+.btn-secondary:hover { border-color: var(--text2); background: var(--cream2); }
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold) 0%, #1a6fa8 100%);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(43,127,196,0.35);
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(43,127,196,0.45);
+}
+
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+.btn-row {
+  display: flex; gap: 0.75rem; align-items: center;
+  margin-top: 2rem; flex-wrap: wrap;
+}
+
+/* ── STATUS BOXES ── */
+.status-box {
+  display: flex; gap: 1rem; padding: 1rem 1.25rem;
+  border-radius: 8px; font-size: 0.88rem; margin-bottom: 1rem;
+  animation: stepIn 0.3s ease;
+}
+
+.status-box .icon { font-size: 1rem; flex-shrink: 0; margin-top: 2px; }
+.status-success { background: var(--green-light); border: 1px solid #a7dfc4; color: var(--green); }
+.status-warning  { background: var(--gold-light);  border: 1px solid #7dc4e8; color: var(--gold); }
+.status-error    { background: var(--red-light);   border: 1px solid #e8a8a8; color: var(--red); }
+.status-info     { background: var(--teal-light);  border: 1px solid #a0d8e0; color: var(--teal); }
+
+/* ── CHIPS ── */
+.chip-group { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
+
+.chip {
+  padding: 0.5rem 1.1rem;
+  border-radius: 100px;
+  border: 1.5px solid var(--cream3);
+  font-size: 0.85rem; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+  background: var(--cream); color: var(--text2);
+  user-select: none;
+}
+
+.chip:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+.chip.selected { background: var(--navy); color: #fff; border-color: var(--navy); box-shadow: 0 2px 8px rgba(12,24,41,0.2); }
+
+/* ── LOADING ── */
+.loading-overlay { text-align: center; padding: 4rem 2rem; animation: stepIn 0.4s ease; }
+
+.spinner {
+  width: 44px; height: 44px;
+  border: 2.5px solid var(--cream3);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  margin: 0 auto 1.75rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.4rem; font-weight: 700;
+  color: var(--navy); margin-bottom: 0.4rem;
+}
+
+.loading-steps {
+  list-style: none; margin: 1.5rem auto 0;
+  display: flex; flex-direction: column; gap: 0.4rem;
+  max-width: 380px;
+}
+
+.loading-step {
+  display: flex; align-items: center; gap: 0.75rem;
+  font-size: 0.88rem; color: var(--text3);
+  padding: 0.5rem 1rem; border-radius: 6px;
+  background: var(--cream2); transition: all 0.3s;
+}
+
+.loading-step.active { color: var(--teal); background: var(--teal-light); font-weight: 500; }
+.loading-step.done { color: var(--green); background: var(--green-light); }
+.loading-step .step-icon { font-size: 0.95rem; width: 18px; text-align: center; }
+
+/* ── TABLES ── */
+.plan-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin: 0.75rem 0; }
+
+.plan-table th {
+  background: var(--navy);
+  color: rgba(255,255,255,0.85);
+  padding: 0.7rem 1rem;
+  text-align: left; font-weight: 500;
+  font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+  font-family: 'DM Mono', monospace;
+}
+
+.plan-table th:first-child { border-radius: 6px 0 0 0; }
+.plan-table th:last-child  { border-radius: 0 6px 0 0; }
+
+.plan-table td {
+  padding: 0.7rem 1rem; border-bottom: 1px solid var(--cream3);
+  vertical-align: top; line-height: 1.5;
+}
+
+.plan-table tr:nth-child(even) td { background: var(--cream); }
+.plan-table tr:last-child td { border-bottom: none; }
+.plan-table tr:hover td { background: var(--teal-light); }
+
+/* ── TAGS ── */
+.tag {
+  display: inline-flex; align-items: center;
+  font-size: 0.68rem; font-weight: 700;
+  padding: 0.2rem 0.55rem; border-radius: 4px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  font-family: 'DM Mono', monospace; white-space: nowrap;
+}
+
+.tag-ap      { background: var(--navy);   color: #fff; }
+.tag-honors  { background: var(--teal-light); color: var(--teal); border: 1px solid #a0d8e0; }
+.tag-cp      { background: var(--cream2); color: var(--text3); border: 1px solid var(--border); }
+.tag-star    { background: var(--gold-light); color: var(--gold); border: 1px solid #7dc4e8; }
+
+/* ── ALERT BOXES ── */
+.alert-box {
+  border-radius: 8px; padding: 1.1rem 1.35rem;
+  margin: 1.25rem 0; border-left: 3px solid;
+}
+
+.alert-box .alert-title {
+  font-weight: 600; font-size: 0.88rem;
+  margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;
+}
+
+.alert-box ul { padding-left: 1.2rem; }
+.alert-box li { font-size: 0.87rem; margin-bottom: 0.3rem; line-height: 1.55; }
+
+.alert-green  { background: var(--green-light);  border-color: var(--green);  color: var(--green); }
+.alert-teal   { background: var(--teal-light);   border-color: var(--teal);   color: var(--teal); }
+.alert-gold   { background: var(--gold-light);   border-color: var(--gold);   color: var(--gold); }
+.alert-purple { background: var(--purple-light); border-color: var(--purple); color: var(--purple); }
+.alert-red    { background: var(--red-light);    border-color: var(--red);    color: var(--red); }
+
+/* ── OUTPUT TABS ── */
+.output-nav {
+  display: flex; gap: 0.35rem; flex-wrap: wrap;
+  margin-bottom: 1.5rem; padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--cream3);
+  /* Mobile scroll fade hint */
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 2rem), transparent 100%);
+  mask-image: linear-gradient(to right, black calc(100% - 2rem), transparent 100%);
+}
+
+.output-tab {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem; letter-spacing: 0.07em; text-transform: uppercase;
+  padding: 0.45rem 1rem; border-radius: 6px;
+  border: 1px solid var(--cream3);
+  background: var(--cream); color: var(--text3);
+  cursor: pointer; transition: all 0.2s; font-weight: 500;
+}
+
+.output-tab:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+.output-tab.active { background: var(--navy); color: #fff; border-color: var(--navy); box-shadow: 0 2px 8px rgba(12,24,41,0.2); }
+
+.output-section { display: none; animation: stepIn 0.3s ease; }
+.output-section.active { display: block; }
+
+/* ── SNAPSHOT GRID ── */
+.snapshot-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;
+}
+
+.snapshot-item {
+  background: var(--cream); border: 1px solid var(--cream3);
+  border-radius: 8px; padding: 0.9rem 1.1rem;
+}
+
+.snapshot-label {
+  font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text3); margin-bottom: 0.3rem;
+  font-family: 'DM Mono', monospace;
+}
+
+.snapshot-value { font-size: 0.9rem; color: var(--text); font-weight: 500; line-height: 1.4; }
+
+/* ── SECTION DIVIDERS ── */
+.section-divider {
+  display: flex; align-items: center; gap: 1rem;
+  margin: 2rem 0 1.25rem;
+}
+
+.section-divider h3 {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.2rem; font-weight: 700;
+  color: var(--navy); white-space: nowrap;
+}
+
+.divider-line { flex: 1; height: 1px; background: var(--cream3); }
+
+/* ── ACTION BAR ── */
+.action-bar {
+  display: flex; gap: 0.75rem; padding: 1rem 1.5rem;
+  background: var(--cream2); border: 1px solid var(--cream3);
+  border-radius: var(--r); margin-bottom: 1.5rem; align-items: center;
+  flex-wrap: wrap;
+}
+
+.action-bar-label {
+  font-size: 0.72rem; font-weight: 600; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.08em; flex: 1;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── UPLOAD FILE ITEMS ── */
+.upload-success {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.85rem 1.1rem; background: var(--green-light);
+  border: 1px solid #a7dfc4; border-radius: 6px;
+  font-size: 0.88rem; font-weight: 500; color: var(--green);
+  margin-top: 0.6rem;
+}
+
+/* ── DISCLAIMER ── */
+.disclaimer {
+  font-size: 0.78rem; color: var(--text3);
+  border-top: 1px solid var(--cream3);
+  padding-top: 1.25rem; margin-top: 2rem;
+  font-style: italic; line-height: 1.6;
+}
+
+/* ── ROADMAP ── */
+.roadmap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+
+/* ── SEARCH TIP BOX ── */
+.tip-box {
+  padding: 1rem 1.25rem;
+  background: var(--teal-light);
+  border: 1px solid #a0d8e0;
+  border-radius: 8px;
+  font-size: 0.85rem; color: var(--teal);
+  margin-top: 1rem; line-height: 1.6;
+}
+
+/* ── RESPONSIVE ── */
+/* ══════════════════════════════════════
+   MOBILE — 480px and below (phones)
+   ══════════════════════════════════════ */
+@media (max-width: 480px) {
+  /* ── Layout ── */
+  .app { padding: 1.25rem 0.9rem 5rem; }
+  header { padding: 0 1rem; height: 56px; }
+
+  /* ── Logo ── */
+  .logo { font-size: 1.05rem; }
+  .step-track { gap: 0; }
+  .step-pip { width: 20px; margin: 0 1px; }
+
+  /* ── Progress ── */
+  .progress-bar { margin-bottom: 1.75rem; }
+
+  /* ── Step header ── */
+  .step-eyebrow { font-size: 0.62rem; }
+  .step-title { font-size: 1.55rem; line-height: 1.2; margin-bottom: 0.5rem; }
+  .step-subtitle { font-size: 0.88rem; }
+
+  /* ── Cards ── */
+  .card { padding: 1.25rem 1rem; border-radius: 8px; }
+
+  /* ── Forms ── */
+  .form-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .form-grid.thirds { grid-template-columns: 1fr; }
+  .form-group.span2 { grid-column: span 1; }
+  input, select, textarea { font-size: 16px; /* prevents iOS zoom */ padding: 0.7rem 0.85rem; }
+  label { font-size: 0.7rem; }
+
+  /* ── Buttons ── */
+  .btn { font-size: 0.82rem; padding: 0.72rem 1.25rem; }
+  .btn-row { gap: 0.6rem; flex-direction: column; align-items: stretch; }
+  .btn-row .btn { text-align: center; justify-content: center; }
+  .btn-row .btn-secondary { order: 2; } /* Back button below primary */
+  .btn-row .btn-primary,
+  .btn-row .btn-gold { order: 1; }
+
+  /* ── Chips ── */
+  .chip-group { gap: 0.4rem; }
+  .chip { font-size: 0.8rem; padding: 0.45rem 0.85rem; }
+
+  /* ── Upload zones ── */
+  .upload-zone { padding: 1.5rem 1rem; }
+  .upload-icon { font-size: 1.8rem; }
+  .upload-label { font-size: 0.88rem; }
+
+  /* ── Transcript slots ── */
+  .grade-slot-zone { padding: 0.85rem !important; }
+
+  /* ── Action bar ── */
+  .action-bar { flex-direction: column; align-items: flex-start; gap: 0.6rem; padding: 0.9rem 1rem; }
+  .action-bar-label { display: none; }
+  .action-bar .btn { font-size: 0.78rem; padding: 0.45rem 0.9rem; }
+
+  /* ── Output tabs — horizontal scroll ── */
+  .output-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.75rem;
+    gap: 0.3rem;
+  }
+  .output-nav::-webkit-scrollbar { display: none; }
+  .output-tab {
+    font-size: 0.62rem;
+    padding: 0.38rem 0.65rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ── Tables — horizontal scroll ── */
+  .plan-table-wrapper,
+  [style*="overflow-x:auto"] { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .plan-table { font-size: 0.78rem; min-width: 520px; }
+  .plan-table th { font-size: 0.65rem; padding: 0.5rem 0.6rem; }
+  .plan-table td { padding: 0.55rem 0.6rem; font-size: 0.78rem; }
+
+  /* ── Snapshot grid ── */
+  .snapshot-grid { grid-template-columns: 1fr; gap: 0.6rem; }
+  .snapshot-item { padding: 0.75rem 0.9rem; }
+  .snapshot-label { font-size: 0.65rem; }
+  .snapshot-value { font-size: 0.85rem; }
+
+  /* ── Section dividers ── */
+  .section-divider { margin: 1.5rem 0 1rem; }
+  .section-divider h3 { font-size: 1.05rem; }
+
+  /* ── Alert boxes ── */
+  .alert-box { padding: 0.85rem 1rem; font-size: 0.84rem; }
+  .alert-box li { font-size: 0.82rem; }
+
+  /* ── Loading ── */
+  .loading-overlay { padding: 2rem 1rem; }
+  .loading-title { font-size: 1.15rem; }
+  .loading-steps { max-width: 100%; }
+  .loading-step { font-size: 0.82rem; padding: 0.45rem 0.75rem; }
+
+  /* ── Status boxes ── */
+  .status-box { font-size: 0.84rem; padding: 0.85rem 1rem; }
+
+  /* ── Tags ── */
+  .tag { font-size: 0.62rem; padding: 0.18rem 0.45rem; }
+
+  /* ── Grade header in plan tabs ── */
+  [id^="tab-grade"] > div:first-child { border-radius: 6px !important; padding: 0.8rem 1rem !important; margin-bottom: 0.9rem !important; }
+
+  /* ── Tip box ── */
+  .tip-box { font-size: 0.82rem; padding: 0.85rem 1rem; }
+
+  /* ── Privacy notice bar ── */
+  div[style*="display:flex;align-items:center;gap:0.5rem;font-size:0.75rem"] { font-size: 0.72rem !important; padding: 0.5rem 0.8rem !important; }
+
+  /* ── Header disclaimer (hide on very small screens) ── */
+  header > div > div:first-child { display: none; }
+}
+
+/* ══════════════════════════════════════
+   TABLET — 481px to 768px
+   ══════════════════════════════════════ */
+@media (min-width: 481px) and (max-width: 768px) {
+  .app { padding: 1.75rem 1.25rem 4rem; }
+  header { padding: 0 1.5rem; }
+
+  .step-title { font-size: 1.8rem; }
+
+  .form-grid { grid-template-columns: 1fr 1fr; }
+  .form-grid.thirds { grid-template-columns: 1fr 1fr; }
+  input, select, textarea { font-size: 16px; /* prevents iOS zoom */ }
+
+  .btn-row { flex-wrap: wrap; }
+
+  .output-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.6rem;
+  }
+  .output-nav::-webkit-scrollbar { display: none; }
+  .output-tab { white-space: nowrap; flex-shrink: 0; font-size: 0.67rem; }
+
+  .plan-table { font-size: 0.82rem; min-width: 480px; }
+  .snapshot-grid { grid-template-columns: 1fr 1fr; }
+
+  .action-bar { flex-wrap: wrap; }
+}
+
+/* ══════════════════════════════════════
+   ALL MOBILE (≤768px) — shared fixes
+   ══════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Prevent table overflow clipping */
+  .card { overflow-x: hidden; }
+  .card > div[style*="overflow-x:auto"] { margin: 0 -1rem; padding: 0 1rem; }
+
+  /* Make tables scrollable containers */
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Roadmap grid single column */
+  .roadmap-grid { grid-template-columns: 1fr; }
+
+  /* Bottom line dark box responsive */
+  #tab-bottomline > div:first-child { padding: 1.25rem !important; }
+  #tab-bottomline h2 { font-size: 1.4rem !important; }
+
+  /* Form grid span2 collapses */
+  .form-group.span2 { grid-column: span 1; }
+
+  /* Sticky bottom action bar for results */
+  .action-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    background: var(--cream2);
+  }
+}
+
+/* ══════════════════════════════════════════
+   PRINT / PDF STYLES
+   Works with browser File → Print → Save as PDF
+   ══════════════════════════════════════════ */
+@media print {
+  /* ── Page setup ── */
+  @page {
+    size: letter;
+    margin: 0.75in 0.65in;
+  }
+
+  @page :first {
+    margin-top: 0.5in;
+  }
+
+  /* ── Reset screen-only elements ── */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  header,
+  .progress-bar,
+  .output-nav,
+  .action-bar,
+  .btn-row,
+  .btn,
+  .step-eyebrow,
+  .tip-box,
+  #posContent,
+  .disclaimer { display: none !important; }
+
+  /* ── Show all output sections (not just active) ── */
+  .output-section { display: block !important; }
+  .output-section.card { box-shadow: none !important; border: 1px solid #ccc !important; }
+
+  /* ── Body and layout ── */
+  body { background: #fff !important; font-size: 11pt; color: #000 !important; }
+  .app { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+
+  /* ── Page breaks ── */
+  .output-section { page-break-before: always; break-before: page; }
+  .output-section:first-of-type { page-break-before: avoid; break-before: avoid; }
+  .card { page-break-inside: avoid; break-inside: avoid; margin-bottom: 0.4in !important; }
+  .plan-table { page-break-inside: auto; }
+  .plan-table tr { page-break-inside: avoid; break-inside: avoid; }
+  .section-divider { page-break-after: avoid; break-after: avoid; }
+  h2, h3 { page-break-after: avoid; break-after: avoid; }
+
+  /* ── Cover header ── */
+  .print-cover {
+    display: block !important;
+    text-align: center;
+    padding: 0.4in 0 0.3in;
+    border-bottom: 2px solid #0c1829;
+    margin-bottom: 0.3in;
+  }
+
+  .print-cover h1 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 22pt;
+    color: #0c1829;
+    margin-bottom: 6pt;
+  }
+
+  .print-cover p {
+    font-size: 11pt;
+    color: #555;
+  }
+
+  .print-cover .print-badge {
+    display: inline-block;
+    background: #0c1829;
+    color: #fff;
+    padding: 3pt 10pt;
+    border-radius: 4pt;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-top: 6pt;
+  }
+
+  .print-disclaimer {
+    display: block !important;
+    font-size: 8pt;
+    color: #888;
+    text-align: center;
+    border-top: 1px solid #ddd;
+    padding-top: 6pt;
+    margin-top: 0.2in;
+    font-style: italic;
+  }
+
+  /* ── Step header (results title) ── */
+  .step-header { margin-bottom: 0.15in !important; }
+  .step-title { font-size: 18pt !important; color: #0c1829 !important; }
+  .step-subtitle { font-size: 10pt !important; color: #555 !important; }
+
+  /* ── Cards ── */
+  .card { border-radius: 4pt !important; padding: 0.18in !important; animation: none !important; }
+
+  /* ── Tables ── */
+  .plan-table th { background: #0c1829 !important; color: #fff !important; font-size: 8pt !important; padding: 5pt 8pt !important; }
+  .plan-table td { font-size: 9pt !important; padding: 5pt 8pt !important; border-bottom: 1px solid #ddd !important; }
+  .plan-table tr:nth-child(even) td { background: #f7f5ef !important; }
+
+  /* ── Tags ── */
+  .tag { font-size: 7pt !important; padding: 1pt 4pt !important; }
+  .tag-ap { background: #0c1829 !important; color: #fff !important; }
+  .tag-honors { background: #e4f4f7 !important; color: #1a7a8a !important; }
+
+  /* ── Alert boxes ── */
+  .alert-box { border-radius: 3pt !important; padding: 8pt 10pt !important; font-size: 9pt !important; }
+
+  /* ── Snapshot grid ── */
+  .snapshot-grid { grid-template-columns: 1fr 1fr !important; gap: 6pt !important; }
+  .snapshot-item { padding: 8pt !important; }
+  .snapshot-label { font-size: 7pt !important; }
+  .snapshot-value { font-size: 9pt !important; }
+
+  /* ── Grade tab headers ── */
+  [id^="tab-grade"] > div:first-child {
+    border-radius: 4pt !important;
+    padding: 8pt 12pt !important;
+    margin-bottom: 10pt !important;
+  }
+
+  /* ── Section dividers ── */
+  .section-divider h3 { font-size: 13pt !important; }
+
+  /* ── Bottom line dark box ── */
+  #tab-bottomline > div:first-child {
+    background: #0c1829 !important;
+    color: #fff !important;
+    border-radius: 4pt !important;
+    padding: 14pt !important;
+  }
+}
+
+/* Print-only elements hidden on screen */
+.print-cover,
+.print-disclaimer { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-accent"></span>
+    Academic <em>Plan</em>
+  </div>
+  <div style="display:flex;align-items:center;gap:1.5rem">
+    <div style="display:flex;align-items:center;gap:0.45rem;font-size:0.72rem;color:rgba(255,255,255,0.45);letter-spacing:0.03em;font-family:'DM Mono',monospace">
+      <span style="color:var(--gold);font-size:0.8rem">🔒</span>
+      No student data or transcripts are stored
+    </div>
+    <div class="step-track" id="stepDots"></div>
+  </div>
+</header>
+
+<main class="app" id="appContainer">
+  <!-- Steps injected by JS -->
+</main>
+
+<script>
+// ── STATE ──
+// ── API PROXY CONFIGURATION ──
+// When running in Claude.ai: leave as 'https://api.anthropic.com' (handled by Claude.ai)
+// When self-hosting: replace with your Cloudflare Worker URL, e.g.:
+   const PROXY_URL = 'https://academic-plan-proxy.academicplanner.workers.dev';
+//const PROXY_URL = 'https://api.anthropic.com';
+
+const state = {
+  currentStep: 0,
+  student: {},
+  transcripts: [],
+  gradeTranscripts: {},   // keyed by 'g9', 'g10' etc — per-grade uploads
+  extraTranscripts: [],   // additional docs (midyear reports etc)
+  programOfStudies: null,
+  posBase64: null,
+  posFound: false,
+  posSearched: false,
+  interests: [],
+  collegeTier: '',
+  careerGoal: '',
+  plan: null,
+  loadingStep: 0
+};
+
+const TOTAL_STEPS = 5; // intake, transcript, pos, interests, results
+
+// ── Print function ──
+function printPlan() {
+  const p = state.plan;
+  const s = state.student;
+  if (!p) return;
+
+  // Collect all rendered section HTML with all sections visible
+  const appEl = document.getElementById('appContainer');
+  if (!appEl) return;
+
+  // Make all sections visible temporarily
+  const sections = appEl.querySelectorAll('.output-section');
+  const prevDisplay = [];
+  sections.forEach((sec, i) => {
+    prevDisplay[i] = sec.style.display;
+    sec.style.display = 'block';
+  });
+
+  // Get the full CSS from the page
+  let cssText = '';
+  for (const sheet of document.styleSheets) {
+    try {
+      for (const rule of sheet.cssRules) cssText += rule.cssText + '\n';
+    } catch(e) {}
+  }
+
+  // Build a standalone HTML file with embedded CSS and all sections
+  const bodyContent = appEl.innerHTML;
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${s.firstName || 'Academic'} ${s.lastName || 'Plan'} — Academic Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Jost:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+${cssText}
+/* Force all sections visible for print */
+.output-section { display: block !important; }
+.output-nav, .action-bar, .btn-row, .btn, header, .progress-bar,
+.step-eyebrow, .tip-box, #posContent, .step-header { display: none !important; }
+.print-cover, .print-disclaimer { display: block !important; }
+body { background: #fff; }
+.app { max-width: 860px; margin: 0 auto; padding: 1rem; }
+@media print {
+  @page { size: letter; margin: 0.65in; }
+  .output-section { page-break-before: always; }
+  .output-section:first-of-type { page-break-before: avoid; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+${bodyContent}
+</div>
+<div style="text-align:center;font-size:9pt;color:#999;border-top:1px solid #ddd;padding:8pt;margin-top:20pt;font-style:italic">
+  Generated by AcademicPlan &middot; No student data is stored &middot; Verify all recommendations with your school counselor &middot; ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}
+</div>
+<script>
+  // Auto-print when opened
+  window.addEventListener('load', function() {
+    // Small delay for fonts to load
+    setTimeout(function() { window.print(); }, 800);
+  });
+<\/script>
+</body>
+</html>`;
+
+  // Restore section visibility
+  sections.forEach((sec, i) => { sec.style.display = prevDisplay[i]; });
+
+  // Download the file
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${(s.firstName||'Academic').replace(/\s+/g,'_')}_${(s.lastName||'Plan').replace(/\s+/g,'_')}_Academic_Plan.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showToast('File downloaded — open it in your browser and it will print automatically', 'info');
+}
+
+function renderDots() {
+  const container = document.getElementById('stepDots');
+  container.innerHTML = '';
+  for (let i = 0; i < TOTAL_STEPS; i++) {
+    const d = document.createElement('div');
+    d.className = 'step-pip' + (i === state.currentStep ? ' active' : i < state.currentStep ? ' done' : '');
+    container.appendChild(d);
+  }
+}
+
+// ── PROGRESS ──
+function progressWidth() {
+  return ((state.currentStep) / (TOTAL_STEPS - 1) * 100) + '%';
+}
+
+// ── RENDER ROUTER ──
+function render() {
+  renderDots();
+  const container = document.getElementById('appContainer');
+  container.innerHTML = '';
+
+  const bar = document.createElement('div');
+  bar.className = 'progress-bar';
+  bar.innerHTML = `<div class="progress-fill" style="width:${progressWidth()}"></div>`;
+  container.appendChild(bar);
+
+  // Privacy notice — shown on all steps
+  if (state.currentStep < 4) {
+    const notice = document.createElement('div');
+    notice.style.cssText = 'display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;color:var(--text3);margin-bottom:1.75rem;padding:0.6rem 0.9rem;background:var(--cream2);border:1px solid var(--cream3);border-radius:6px;';
+    notice.innerHTML = '<span style="color:var(--teal);font-size:0.85rem">🔒</span> <span>Your student information, transcript data, and grades are used only to generate this plan. <strong style="color:var(--text2)">Nothing is stored or retained.</strong> All data stays in your browser session only.</span>';
+    container.appendChild(notice);
+  }
+
+  const steps = [renderStep1, renderStep2, renderStep3, renderStep4, renderStep5];
+  steps[state.currentStep](container);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════
+// STEP 1 — Student Information
+// ══════════════════════════════════════
+function renderStep1(container) {
+  container.innerHTML += `
+  <div class="step-header">
+    <div class="step-eyebrow">Step 1 of ${TOTAL_STEPS}</div>
+    <h1 class="step-title">Student Information</h1>
+    <p class="step-subtitle">Tell us about the student. We'll use this to personalize the academic plan and locate your school's Program of Studies.</p>
+  </div>
+
+  <div class="card">
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>First Name *</label>
+        <input type="text" id="firstName" placeholder="First name" value="${state.student.firstName||''}">
+      </div>
+      <div class="form-group">
+        <label>Last Name *</label>
+        <input type="text" id="lastName" placeholder="Last name" value="${state.student.lastName||''}">
+      </div>
+      <div class="form-group span2">
+        <label>High School Name *</label>
+        <input type="text" id="schoolName" placeholder="e.g. Ridge High School" value="${state.student.schoolName||''}">
+      </div>
+      <div class="form-group">
+        <label>Town / City *</label>
+        <input type="text" id="town" placeholder="e.g. Basking Ridge" value="${state.student.town||''}">
+      </div>
+      <div class="form-group">
+        <label>State *</label>
+        <select id="state">
+          <option value="">Select state…</option>
+          ${['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'].map(s => `<option value="${s}" ${state.student.state===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Most Recent Grade Completed *</label>
+        <select id="currentGrade">
+          <option value="">Select…</option>
+          <option value="8" ${state.student.currentGrade==='8'?'selected':''}>Completed Grade 8 (entering 9th)</option>
+          <option value="9" ${state.student.currentGrade==='9'?'selected':''}>Completed Grade 9 (entering 10th)</option>
+          <option value="10" ${state.student.currentGrade==='10'?'selected':''}>Completed Grade 10 (entering 11th)</option>
+          <option value="11" ${state.student.currentGrade==='11'?'selected':''}>Completed Grade 11 (entering 12th)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Entering School Year *</label>
+        <select id="schoolYear">
+          <option value="">Select…</option>
+          <option value="2024" ${state.student.schoolYear==='2024'?'selected':''}>2024–25</option>
+          <option value="2025" ${(state.student.schoolYear==='2025'||!state.student.schoolYear)?'selected':''}>2025–26</option>
+          <option value="2026" ${state.student.schoolYear==='2026'?'selected':''}>2026–27</option>
+          <option value="2027" ${state.student.schoolYear==='2027'?'selected':''}>2027–28</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Weighted GPA (if known)</label>
+        <input type="text" id="gpa" placeholder="Weighted GPA" value="${state.student.gpa||''}">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="submitStep1()">Continue →</button>
+    </div>
+  </div>`;
+}
+
+function submitStep1() {
+  const firstName = document.getElementById('firstName').value.trim();
+  const lastName = document.getElementById('lastName').value.trim();
+  const schoolName = document.getElementById('schoolName').value.trim();
+  const town = document.getElementById('town').value.trim();
+  const stateVal = document.getElementById('state').value;
+  const currentGrade = document.getElementById('currentGrade').value;
+  const schoolYear = document.getElementById('schoolYear').value || '2025';
+
+  if (!firstName || !lastName || !schoolName || !town || !stateVal || !currentGrade) {
+    showToast('Please fill in all required fields.', 'error');
+    return;
+  }
+
+  state.student = { firstName, lastName, schoolName, town, state: stateVal, currentGrade, schoolYear, gpa: document.getElementById('gpa').value.trim() };
+  state.currentStep = 1;
+  render();
+}
+
+// ══════════════════════════════════════
+// STEP 2 — Transcript Upload
+// ══════════════════════════════════════
+function renderStep2(container) {
+  const completedGrade = parseInt(state.student.currentGrade) || 9;
+  const startGrade = completedGrade === 8 ? 8 : 9;
+  const gradeSlots = [];
+  for (let g = startGrade; g <= completedGrade; g++) gradeSlots.push(g);
+  const gradeLabel = g => g === 8 ? 'Grade 8 (Middle School)' : `Grade ${g}`;
+
+  container.innerHTML += `
+  <div class="step-header">
+    <div class="step-eyebrow">Step 2 of ${TOTAL_STEPS}</div>
+    <h1 class="step-title">Upload Transcripts</h1>
+    <p class="step-subtitle">Upload the transcript for each completed year. We need all of them to build an accurate course history for ${state.student.firstName}.</p>
+  </div>
+  <div class="card">
+    ${gradeSlots.map(g => `
+    <div style="margin-bottom:1.25rem">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-size:0.75rem;font-weight:700;flex-shrink:0">${g}</span>
+        <span style="font-size:0.88rem;font-weight:600;color:var(--text2)">${gradeLabel(g)} Transcript</span>
+        <span style="font-size:0.78rem;color:var(--text3)">— required</span>
+      </div>
+      <div id="slot-g${g}-content"></div>
+    </div>`).join('')}
+
+    <div style="border-top:1px solid var(--cream3);padding-top:1.25rem;margin-top:0.5rem">
+      <div style="font-size:0.82rem;color:var(--text3);margin-bottom:0.5rem">Have a midyear report or additional document? (optional)</div>
+      <div class="upload-zone" id="transcriptZone" style="padding:1.25rem">
+        <input type="file" id="transcriptFile" accept=".pdf,.jpg,.jpeg,.png" multiple onchange="handleExtraTranscripts(this)">
+        <p style="font-size:0.85rem;color:var(--text3);margin:0">➕ Add extra document</p>
+      </div>
+      <div id="extraTranscriptList" style="margin-top:0.5rem"></div>
+    </div>
+
+    <div class="form-group" style="margin-top:1.5rem">
+      <label>Or paste grades manually (optional supplement)</label>
+      <textarea id="manualGrades" placeholder="e.g. Grade 9: Honors Biology (A), English 9 (B+)…" style="min-height:80px">${state.student.manualGrades||''}</textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+      <button class="btn btn-primary" onclick="submitStep2()">Continue →</button>
+    </div>
+  </div>`;
+
+  // Render each slot (done after innerHTML set)
+  if (!state.gradeTranscripts) state.gradeTranscripts = {};
+  gradeSlots.forEach(g => refreshSlot(g));
+  setupDropZone(document.getElementById('transcriptZone'));
+  renderExtraTranscriptList();
+}
+
+function refreshSlot(grade) {
+  const el = document.getElementById(`slot-g${grade}-content`);
+  if (!el) return;
+  const key = `g${grade}`;
+  const uploaded = state.gradeTranscripts?.[key];
+  if (uploaded) {
+    el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 1rem;background:var(--green-light);border:1px solid #a7dfc4;border-radius:6px">
+      <span>${uploaded.mediaType==='application/pdf'?'📄':'🖼'}</span>
+      <div style="flex:1;min-width:0;font-size:0.85rem;font-weight:500;color:var(--green);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${uploaded.name}</div>
+      <span style="font-size:0.72rem;color:var(--green);margin-right:0.5rem">✓ Ready</span>
+      <button onclick="removeGradeTranscript('${key}')" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:0.9rem;flex-shrink:0">✕</button>
+    </div>`;
+  } else {
+    el.innerHTML = `
+    <div class="upload-zone grade-slot-zone" style="padding:1rem;position:relative">
+      <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%"
+        onchange="handleGradeTranscript(this,'${key}')">
+      <p style="font-size:0.83rem;color:var(--text3);margin:0;text-align:center">Click to upload or drag & drop · PDF, JPG, PNG</p>
+    </div>`;
+  }
+}
+
+function handleGradeTranscript(input, key) {
+  const file = input.files[0];
+  if (!file) return;
+  if (!state.gradeTranscripts) state.gradeTranscripts = {};
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.gradeTranscripts[key] = { name: file.name, base64: e.target.result.split(',')[1], mediaType: file.type };
+    refreshSlot(parseInt(key.replace('g','')));
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeGradeTranscript(key) {
+  if (state.gradeTranscripts) delete state.gradeTranscripts[key];
+  refreshSlot(parseInt(key.replace('g','')));
+}
+
+function handleExtraTranscripts(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  if (!state.extraTranscripts) state.extraTranscripts = [];
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      state.extraTranscripts.push({ name: file.name, base64: e.target.result.split(',')[1], mediaType: file.type, label: 'Extra' });
+      renderExtraTranscriptList();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function renderExtraTranscriptList() {
+  const list = document.getElementById('extraTranscriptList');
+  if (!list) return;
+  if (!state.extraTranscripts?.length) { list.innerHTML = ''; return; }
+  list.innerHTML = state.extraTranscripts.map((t, i) => `
+  <div style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 1rem;background:var(--green-light);border:1px solid #a7dfc4;border-radius:6px;margin-bottom:0.4rem">
+    <span>${t.mediaType==='application/pdf'?'📄':'🖼'}</span>
+    <div style="flex:1;font-size:0.85rem;font-weight:500;color:var(--green)">${t.name}</div>
+    <button onclick="removeExtraTranscript(${i})" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:0.9rem">✕</button>
+  </div>`).join('');
+}
+
+function removeExtraTranscript(i) {
+  if (state.extraTranscripts) state.extraTranscripts.splice(i, 1);
+  renderExtraTranscriptList();
+}
+
+function setupDropZone(zone) {
+  if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) handleExtraTranscripts({ files: e.dataTransfer.files, value: '' });
+  });
+}
+
+function submitStep2() {
+  const completedGrade = parseInt(state.student.currentGrade) || 9;
+  const hasRequired = state.gradeTranscripts?.[`g${completedGrade}`];
+  const hasManual = document.getElementById('manualGrades')?.value?.trim();
+  const hasExtra = state.extraTranscripts?.length > 0;
+
+  if (!hasRequired && !hasManual && !hasExtra) {
+    showToast(`Please upload at least the Grade ${completedGrade} transcript.`, 'error');
+    return;
+  }
+
+  state.student.manualGrades = document.getElementById('manualGrades').value.trim();
+
+  // Merge all grade transcripts + extras into state.transcripts for the API
+  state.transcripts = [];
+  const startGrade = completedGrade === 8 ? 8 : 9;
+  for (let g = startGrade; g <= completedGrade; g++) {
+    const t = state.gradeTranscripts?.[`g${g}`];
+    if (t) state.transcripts.push({ ...t, label: `Grade ${g} Transcript` });
+  }
+  (state.extraTranscripts || []).forEach(t => state.transcripts.push(t));
+
+  state.currentStep = 2;
+  render();
+}
+// ══════════════════════════════════════
+// STEP 3 — Program of Studies
+// ══════════════════════════════════════
+function renderStep3(container) {
+  container.innerHTML += `
+  <div class="step-header">
+    <div class="step-eyebrow">Step 3 of ${TOTAL_STEPS}</div>
+    <h1 class="step-title">Program of Studies</h1>
+    <p class="step-subtitle">We'll search for ${state.student.schoolName}'s Program of Studies to verify course prerequisites and sequences.</p>
+  </div>
+  <div id="posContent"></div>`;
+
+  if (!state.posSearched) {
+    renderPosSearch();
+  } else if (state.posFound) {
+    renderPosFound();
+  } else {
+    renderPosNotFound();
+  }
+}
+
+function renderPosSearch() {
+  document.getElementById('posContent').innerHTML = `
+  <div class="card">
+    <div class="status-box status-info">
+      <span class="icon">🔍</span>
+      <div>
+        <strong>Ready to search</strong><br>
+        We'll look for the official Program of Studies for <strong>${state.student.schoolName}</strong> in ${state.student.town}, ${state.student.state}.
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+      <button class="btn btn-gold" onclick="searchForPos()">🔍 Search for Program of Studies</button>
+    </div>
+  </div>`;
+}
+
+// ── Known school POS URLs — checked before doing a web search ──
+// Add schools here as they are confirmed. Format: "school name (lowercase)" → URL
+const KNOWN_POS_URLS = {
+  'ridge high school': {
+    url: 'https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5231/Rhs/e12721a4-66d2-4e25-9ecf-db3e3fcdfcf1/RHS_Program_of_Studies_2025-2026.pdf?disposition=inline',
+    pageUrl: 'https://ridgehigh.bernardsboe.com/',
+    ceeb: '310050',
+    name: 'Ridge High School, Basking Ridge NJ'
+  }
+};
+
+function lookupKnownPos(schoolName, town, stateAbbr) {
+  const key = (schoolName || '').toLowerCase().trim();
+  const townKey = (town || '').toLowerCase().trim();
+  // Try exact school name match
+  if (KNOWN_POS_URLS[key]) return KNOWN_POS_URLS[key];
+  // Try partial match — school name contains a known key
+  for (const [k, v] of Object.entries(KNOWN_POS_URLS)) {
+    if (key.includes(k) || k.includes(key)) return v;
+  }
+  return null;
+}
+
+async function searchForPos() {
+  document.getElementById('posContent').innerHTML = `
+  <div class="card">
+    <div class="loading-overlay">
+      <div class="spinner"></div>
+      <p class="loading-title" id="posSearchTitle">Searching for Program of Studies…</p>
+      <p style="color:var(--text3);font-size:0.9rem" id="posSearchSub">Looking up ${state.student.schoolName}, ${state.student.town}, ${state.student.state}</p>
+    </div>
+  </div>`;
+
+  const updateSearchStatus = (title, sub) => {
+    const t = document.getElementById('posSearchTitle');
+    const s = document.getElementById('posSearchSub');
+    if (t) t.textContent = title;
+    if (s) s.textContent = sub;
+  };
+
+  try {
+    const school = state.student.schoolName;
+    const town = state.student.town;
+    const stateAbbr = state.student.state;
+
+    // ── Check known URL table first ──
+    const known = lookupKnownPos(school, town, stateAbbr);
+    if (known) {
+      updateSearchStatus('Found in database!', `Verified URL for ${school}`);
+      state.posSearched = true;
+      state.posFound = true;
+      state.posUrl = known.url;
+      state.posPageUrl = known.pageUrl || '';
+      state.posNotes = `URL retrieved from verified database for ${known.name}`;
+      state.schoolCeeb = known.ceeb || '';
+      state.posSearchAttempts = ['Matched from known school database — no web search needed'];
+      renderPosFound();
+      return;
+    }
+
+    // ── No known URL — proceed with web search ──
+    const searchPrompt = `You need to find the official "Program of Studies" or "Course Catalog" PDF for "${school}" in ${town}, ${stateAbbr}.
+
+Use web_search multiple times with different queries to find it. Try these strategies in order:
+
+1. Search: "${school}" "${town}" "${stateAbbr}" "program of studies" PDF 2025
+2. Search: "${school}" "program of studies" site:*.k12.nj.us OR site:*.edu filetype:pdf
+3. Search: "${school}" counseling "course selection" "program of studies"
+4. If you find the school's counseling/guidance page URL, fetch that page to find the PDF link
+5. Look for the PDF on common hosting platforms: Thrillshare, core-docs.s3, Google Drive, direct school domain uploads
+6. Also try searching for the school's CEEB code and school profile
+
+The Program of Studies is often found:
+- On the school counseling/guidance page
+- Linked from "course selection" or "academic planning" pages  
+- Hosted on Thrillshare (files-backend.assets.thrillshare.com) or Amazon S3 (core-docs.s3)
+- Sometimes as a Google Drive link that needs the file ID extracted
+
+When you find a PDF URL, verify it is actually a Program of Studies (not just a profile or handbook) by checking the URL or page context.
+
+Return ONLY a JSON object:
+{
+  "found": true or false,
+  "url": "the direct PDF URL — must be a complete https:// URL",
+  "pageUrl": "the school webpage where the PDF link was found",
+  "schoolFullName": "official school name",
+  "ceeb": "CEEB code if found",
+  "hostingPlatform": "e.g. Thrillshare, S3, Google Drive, school domain",
+  "searchAttempts": ["list each search query you tried"],
+  "notes": "what you found and how, or why not found"
+}`;
+
+    updateSearchStatus('Searching school websites…', 'Trying multiple search strategies');
+
+    const response = await fetch(`${PROXY_URL}/v1/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: searchPrompt }]
+      })
+    });
+
+    updateSearchStatus('Analyzing results…', 'Verifying PDF links');
+
+    const data = await response.json();
+    const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+
+    let result;
+    try {
+      result = (() => { try { const j = extractOutermostJson(text); return j ? JSON.parse(j) : null; } catch(e) { return null; } })();
+    } catch {
+      result = null;
+    }
+
+    // If we got a URL, try to verify it's accessible
+    if (result && result.url && result.url.startsWith('https://')) {
+      updateSearchStatus('Verifying PDF access…', result.url.substring(0, 60) + '…');
+
+      // For Google Drive links, convert to direct download format
+      const gdMatch = result.url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (gdMatch) {
+        result.url = `https://drive.google.com/uc?export=download&id=${gdMatch[1]}`;
+        result.notes = (result.notes || '') + ' (Converted to direct download URL)';
+      }
+
+      state.posSearched = true;
+      state.posFound = true;
+      state.posUrl = result.url;
+      state.posPageUrl = result.pageUrl || '';
+      state.posNotes = result.notes || '';
+      state.schoolCeeb = result.ceeb || '';
+      state.posSearchAttempts = result.searchAttempts || [];
+      renderPosFound();
+    } else {
+      // Second attempt — try fetching the school's counseling page directly
+      updateSearchStatus('Trying school website directly…', `Looking for ${school} counseling page`);
+
+      const fallbackPrompt = `The first search did not find a direct PDF URL for "${school}" Program of Studies in ${town}, ${stateAbbr}.
+
+Please try these specific steps:
+1. Search for the school's official website
+2. Fetch the school's counseling or guidance page
+3. Look for any link containing "program of studies", "course catalog", "course selection"
+4. Fetch that page and find the actual PDF download link
+5. Also try searching: "${school}" "thrillshare" OR "core-docs.s3" "program of studies"
+6. Try: "${school}" guidance counseling "program of studies" 2024 OR 2025
+
+Return ONLY JSON:
+{
+  "found": true or false,
+  "url": "direct PDF URL or empty string",
+  "pageUrl": "page where PDF link was found",  
+  "schoolWebsite": "school's main website URL",
+  "ceeb": "CEEB code",
+  "notes": "detailed explanation of what was found"
+}`;
+
+      const response2 = await fetch(`${PROXY_URL}/v1/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4000,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: [{ role: 'user', content: fallbackPrompt }]
+        })
+      });
+
+      const data2 = await response2.json();
+      const text2 = data2.content.filter(b => b.type === 'text').map(b => b.text).join('');
+
+      let result2;
+      try {
+        result2 = (() => { try { const j = extractOutermostJson(text2); return j ? JSON.parse(j) : null; } catch(e) { return null; } })();
+      } catch {
+        result2 = null;
+      }
+
+      state.posSearched = true;
+
+      if (result2 && result2.url && result2.url.startsWith('https://')) {
+        const gdMatch2 = result2.url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (gdMatch2) {
+          result2.url = `https://drive.google.com/uc?export=download&id=${gdMatch2[1]}`;
+        }
+        state.posFound = true;
+        state.posUrl = result2.url;
+        state.posPageUrl = result2.pageUrl || result2.schoolWebsite || '';
+        state.posNotes = result2.notes || '';
+        state.schoolCeeb = result2.ceeb || '';
+        renderPosFound();
+      } else {
+        state.posFound = false;
+        state.posNotes = (result2?.notes) || (result?.notes) || 'Could not locate a publicly accessible Program of Studies PDF for this school.';
+        renderPosNotFound();
+      }
+    }
+
+  } catch (err) {
+    state.posSearched = true;
+    state.posFound = false;
+    state.posNotes = 'Network error during search: ' + err.message;
+    renderPosNotFound();
+  }
+}
+
+function renderPosFound() {
+  document.getElementById('posContent').innerHTML = `
+  <div class="card">
+    <div class="status-box status-success">
+      <span class="icon">✅</span>
+      <div>
+        <strong>Program of Studies found!</strong><br>
+        Located the official course catalog for ${state.student.schoolName}.
+        ${state.posPageUrl ? `<br><span style="font-size:0.82rem;color:var(--text3)">Found on: ${state.posPageUrl}</span>` : ''}
+        ${state.posUrl ? `<br><a href="${state.posUrl}" target="_blank" style="color:var(--green);font-size:0.85rem;margin-top:0.2rem;display:inline-block">View / Download PDF ↗</a>` : ''}
+      </div>
+    </div>
+    ${state.posSearchAttempts?.length ? `
+    <details style="margin-bottom:1rem;font-size:0.82rem;color:var(--text3)">
+      <summary style="cursor:pointer;padding:0.4rem 0">Search strategies used (${state.posSearchAttempts.length})</summary>
+      <ul style="padding-left:1.2rem;margin-top:0.4rem">${state.posSearchAttempts.map(a => `<li style="margin-bottom:0.2rem">${a}</li>`).join('')}</ul>
+    </details>` : ''}
+    <p style="font-size:0.9rem;color:var(--text3);margin-bottom:1.5rem">The plan will be built using verified course prerequisites and sequences from this document.</p>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+      <button class="btn btn-primary" onclick="advanceToInterests()">Continue →</button>
+    </div>
+  </div>`;
+}
+
+function renderPosNotFound() {
+  document.getElementById('posContent').innerHTML = `
+  <div class="card">
+    <div class="status-box status-warning">
+      <span class="icon">⚠️</span>
+      <div>
+        <strong>Program of Studies not found automatically</strong><br>
+        ${state.posNotes || 'We could not locate a public PDF for this school.'}
+        Please upload it manually below, or continue without it.
+      </div>
+    </div>
+
+    <div class="upload-zone" id="posZone" style="margin-bottom:0.75rem">
+      <input type="file" id="posFile" accept=".pdf" onchange="handlePos(this)">
+      <span class="upload-icon">📋</span>
+      <p class="upload-label">Upload Program of Studies PDF</p>
+      <p class="upload-hint">Download from your school's website, then upload here</p>
+    </div>
+    <div id="posStatus"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+      <button class="btn btn-secondary" onclick="advanceToInterests()">Continue without it</button>
+      <button class="btn btn-primary" id="posNextBtn" onclick="advanceToInterests()" disabled>Continue with upload →</button>
+    </div>
+  </div>`;
+}
+
+function handlePos(input) {
+  const file = input.files[0];
+  if (!file) return;
+  state.programOfStudies = file;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.posBase64 = e.target.result.split(',')[1];
+    document.getElementById('posStatus').innerHTML = `<div class="upload-success">✅ ${file.name} ready</div>`;
+    document.getElementById('posNextBtn').disabled = false;
+    state.posFound = true;
+  };
+  reader.readAsDataURL(file);
+}
+
+function advanceToInterests() {
+  state.currentStep = 3;
+  render();
+}
+
+// ══════════════════════════════════════
+// STEP 4 — Interests & Goals
+// ══════════════════════════════════════
+function renderStep4(container) {
+  container.innerHTML += `
+  <div class="step-header">
+    <div class="step-eyebrow">Step 4 of ${TOTAL_STEPS}</div>
+    <h1 class="step-title">Interests & Goals</h1>
+    <p class="step-subtitle">Help us understand ${state.student.firstName}'s ambitions so we can tailor the academic plan.</p>
+  </div>
+
+  <div class="card">
+    <div class="form-group" style="margin-bottom:1.5rem">
+      <label>Academic Interests (select all that apply)</label>
+      <div class="chip-group" id="interestChips">
+        ${['STEM / Engineering','Pre-Med / Biology','Business / Economics','Law / Political Science','Humanities / History','Computer Science','Creative Arts','Undecided'].map(i =>
+          `<div class="chip ${state.interests.includes(i)?'selected':''}" onclick="toggleChip(this,'${i}')">${i}</div>`
+        ).join('')}
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:1.5rem">
+      <label>Target College Tier *</label>
+      <div class="chip-group" id="tierChips">
+        ${['Ivy League / Top 10','Top 20–30','Top 50 / Strong Regionals','State Flagship'].map(t =>
+          `<div class="chip ${state.collegeTier===t?'selected':''}" onclick="selectTier(this,'${t}')">${t}</div>`
+        ).join('')}
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:1.5rem">
+      <label>Career Direction (optional)</label>
+      <input type="text" id="careerGoal" placeholder="e.g. Law, Medicine, Software Engineering, Finance, Undecided…" value="${state.careerGoal||''}">
+    </div>
+
+    <div class="form-group">
+      <label>Extracurriculars & Activities (optional)</label>
+      <textarea id="extracurriculars" placeholder="e.g. Varsity Soccer, Debate Club, Piano (8 years), DECA…" style="min-height:80px">${state.student.extracurriculars||''}</textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+      <button class="btn btn-gold" onclick="submitStep4()">✨ Generate Academic Plan</button>
+    </div>
+  </div>`;
+}
+
+function toggleChip(el, value) {
+  el.classList.toggle('selected');
+  if (state.interests.includes(value)) {
+    state.interests = state.interests.filter(i => i !== value);
+  } else {
+    state.interests.push(value);
+  }
+}
+
+function selectTier(el, value) {
+  document.querySelectorAll('#tierChips .chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.collegeTier = value;
+}
+
+async function submitStep4() {
+  if (!state.collegeTier) {
+    showToast('Please select a target college tier.', 'error');
+    return;
+  }
+
+  state.careerGoal = document.getElementById('careerGoal').value.trim();
+  state.student.extracurriculars = document.getElementById('extracurriculars').value.trim();
+  state.currentStep = 4;
+  render(); // show loading then generate
+}
+
+// ══════════════════════════════════════
+// STEP 5 — Results
+// ══════════════════════════════════════
+function renderStep5(container) {
+  if (!state.plan) {
+    renderGenerating(container);
+    generatePlan();
+  } else {
+    renderResults(container);
+  }
+}
+
+function renderGenerating(container) {
+  container.innerHTML += `
+  <div class="step-header">
+    <div class="step-eyebrow">Generating Plan</div>
+    <h1 class="step-title">Building ${state.student.firstName}'s Plan…</h1>
+  </div>
+  <div class="card">
+    <div class="loading-overlay">
+      <div class="spinner"></div>
+      <p class="loading-title" id="loadingTitle">Analyzing transcript…</p>
+      <p style="color:var(--text3);font-size:0.88rem;margin-bottom:0.4rem" id="loadingSubtitle">This typically takes 2–3 minutes — please keep this tab open</p>
+      <p style="color:var(--text3);font-size:0.8rem;margin-bottom:1.5rem;font-family:'DM Mono',monospace" id="loadingTimer">0:00 elapsed</p>
+      <ul class="loading-steps" id="loadingSteps">
+        <li class="loading-step active" id="ls0"><span class="step-icon">📄</span> Reading transcript & grades</li>
+        <li class="loading-step" id="ls1"><span class="step-icon">🏫</span> Fetching Program of Studies</li>
+        <li class="loading-step" id="ls2"><span class="step-icon">🗂</span> Extracting course list & prerequisites</li>
+        <li class="loading-step" id="ls3"><span class="step-icon">📐</span> Building Grade ${parseInt(state.student.currentGrade)+1}–${parseInt(state.student.currentGrade)+2 <= 12 ? parseInt(state.student.currentGrade)+2 : 12} schedules</li>
+        <li class="loading-step" id="ls4"><span class="step-icon">📐</span> Building Grade ${Math.min(parseInt(state.student.currentGrade)+3, 12)}–12 schedules</li>
+        <li class="loading-step" id="ls5"><span class="step-icon">⚖️</span> Resolving conflicts & verifying rules</li>
+        <li class="loading-step" id="ls6"><span class="step-icon">✅</span> Finalizing plan</li>
+      </ul>
+    </div>
+  </div>`;
+
+  // Elapsed timer — shows actual time so user knows the app is still working
+  const startTime = Date.now();
+  const timerInterval = setInterval(() => {
+    const el = document.getElementById('loadingTimer');
+    if (!el) { clearInterval(timerInterval); return; }
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    el.textContent = `${mins}:${secs.toString().padStart(2,'0')} elapsed`;
+
+    // Update subtitle with encouragement at key milestones
+    const subtitle = document.getElementById('loadingSubtitle');
+    if (subtitle) {
+      if (elapsed > 150) subtitle.textContent = 'Almost there — finalizing your plan…';
+      else if (elapsed > 90) subtitle.textContent = 'Still working — complex plans take longer…';
+      else if (elapsed > 45) subtitle.textContent = 'Building your schedules — this is the longest step…';
+    }
+  }, 1000);
+
+  // Store timer ref so generatePlan can clear it when done
+  window._loadingTimerInterval = timerInterval;
+}
+
+// ── PHASE 1: Extract all rules from Program of Studies ──
+// ── PHASE 1: Extract ALL rules and EXACT course names from Program of Studies ──
+async function extractPosRules() {
+  const contentParts = [];
+
+  if (state.posBase64) {
+    contentParts.push({
+      type: 'document',
+      source: { type: 'base64', media_type: 'application/pdf', data: state.posBase64 }
+    });
+  }
+
+  const extractPrompt = `You are reading the official Program of Studies for ${state.student.schoolName}, ${state.student.town}, ${state.student.state}.
+${state.posUrl && !state.posBase64 ? 'Retrieve and read the FULL document from: ' + state.posUrl : ''}
+${contentParts.length > 0 ? 'The Program of Studies PDF is attached.' : ''}
+
+Extract everything needed to build a precise, accurate academic plan. Your output will be used as the ONLY source of truth — no course can appear in the plan unless it exists in this document with its exact name.
+
+PART A — SCHEDULE STRUCTURE:
+Extract how the school's schedule works: how many core subject slots, how many elective slots, required PE/Health, total periods. This defines the exact shape of each year's schedule.
+
+PART B — EXACT COURSE NAMES (most important):
+List every single course offered, organized by department. Use the EXACT name as printed in the Program of Studies. Do not abbreviate, paraphrase, or combine. If the POS says "Honors English 10: American Literature" that is the name — not "Honors English 10".
+
+PART C — PREREQUISITES AND RULES:
+Extract every prerequisite, grade threshold, sequence requirement, AP cap, co-enrollment rule, biannual flag, and graduation requirement.
+
+Return ONLY valid JSON with this exact structure:
+
+{
+  "schoolName": "exact official name",
+  "ceeb": "code or empty string",
+
+  "scheduleStructure": {
+    "totalPeriodsPerDay": 7,
+    "coreSubjectSlots": ["English", "Mathematics", "Science", "Social Studies", "World Language"],
+    "electiveSlots": 2,
+    "requiredSlots": ["Physical Education", "Health"],
+    "studyHallRules": {
+      "maxStudyHallsPerSemester": 1,
+      "minCoursesRequired": "6 courses plus PE/Health each semester",
+      "notes": "Students may not have two scheduled study halls. AP science lab courses that meet two periods count as two slots."
+    },
+    "doublePeriodCourses": ["list any courses that require two periods e.g. AP Physics C"],
+    "notes": "any other schedule notes"
+  },
+
+  "allCourses": {
+    "english": [
+      {"name": "English 9", "level": "CP", "grades": ["9"]},
+      {"name": "Honors English 9", "level": "Honors", "grades": ["9"]},
+      {"name": "English 10: American Literature", "level": "CP", "grades": ["10"]},
+      {"name": "Honors English 10: American Literature", "level": "Honors", "grades": ["10"]},
+      {"name": "AP English 11: Language & Composition", "level": "AP", "grades": ["11"]},
+      {"name": "AP English 12: Literature & Composition", "level": "AP", "grades": ["12"]}
+    ],
+    "mathematics": [
+      {"name": "exact name", "level": "CP or Honors or AP", "grades": ["9","10","11","12"]}
+    ],
+    "science": [
+      {"name": "exact name", "level": "CP or Honors or AP", "grades": ["9","10","11","12"]}
+    ],
+    "socialStudies": [
+      {"name": "exact name", "level": "CP or Honors or AP", "grades": ["9","10","11","12"]}
+    ],
+    "worldLanguage": {
+      "latin": [{"name": "exact name", "level": "CP or Honors or AP", "grades": ["9","10","11","12"]}],
+      "spanish": [{"name": "exact name", "level": "CP or Honors or AP", "grades": ["9","10","11","12"]}],
+      "french": [{"name": "exact name", "level": "CP or Honors or AP", "grades": ["9","10","11","12"]}]
+    },
+    "electives": [
+      {"name": "exact name", "department": "Career Education or Visual Arts or Performing Arts or CS", "level": "CP or Honors or AP", "grades": ["9","10","11","12"]}
+    ],
+    "physicalEducation": [
+      {"name": "exact name", "grades": ["9","10","11","12"]}
+    ]
+  },
+
+  "courseRules": [
+    {
+      "course": "exact course name",
+      "level": "CP or Honors or AP",
+      "department": "English or Mathematics or Science or Social Studies or World Language or Elective",
+      "gradesOffered": ["10","11","12"],
+      "prerequisites": ["every prerequisite exactly as stated in POS"],
+      "minGradeInPrereq": "e.g. B- or A-",
+      "corequisites": ["courses that must be taken simultaneously"],
+      "biannual": false,
+      "summerWorkRequired": false,
+      "notes": "any special conditions, e.g. AP Physics C requires Honors Physics B- AND co-enroll AP Calc",
+      "unlocksNextCourse": "next course in sequence"
+    }
+  ],
+
+  "courseSequences": {
+    "english": ["English 9", "Honors English 10: American Literature", "AP English 11: Language & Composition", "AP English 12: Literature & Composition"],
+    "mathematics": ["ordered sequence from lowest to highest"],
+    "science": ["ordered sequence"],
+    "socialStudies": ["ordered sequence — list EACH required course and which grade it is typically taken"],
+    "latin": ["Latin II Honors", "Latin III Honors", "Advanced Latin Literature", "AP Latin"],
+    "spanish": ["ordered sequence"],
+    "french": ["ordered sequence"]
+  },
+
+  "graduationRequirements": {
+    "totalCredits": "130",
+    "english": "4 years required — list each year",
+    "mathematics": "minimum credits and which courses required",
+    "science": "minimum credits and which specific sciences required (Biology, Chemistry, Physics)",
+    "socialStudies": "list each required course",
+    "worldLanguage": "minimum requirement",
+    "arts": "requirement",
+    "careerEd": "requirement",
+    "financialLiteracy": "requirement",
+    "physicalEducation": "requirement"
+  },
+
+  "apLimits": {
+    "grade9": "No APs or description",
+    "grade10": "Maximum 2 APs — exact rule from POS",
+    "grade11": "No limit or description",
+    "grade12": "No limit or description"
+  },
+
+  "honorsCriteria": {
+    "fromHonorsToNextHonors": "exact grade needed",
+    "fromHonorsToAP": "exact grade needed",
+    "fromCPToHonors": "exact grade needed",
+    "notes": "any other eligibility notes"
+  },
+
+  "criticalRules": [
+    "RULE: AP Physics 1 requires A- in Enriched Chemistry OR B- in Honors Chemistry AND concurrent enrollment in Precalculus or higher — preferred over Honors Physics for Ivy-track students who qualify",
+    "RULE: AP Physics C requires completion of AP Physics 1 OR Honors Physics with minimum B- AND co-enrollment in AP Calc AB or BC in the same year",
+    "RULE: AP Calculus BC requires A or better in Honors Precalculus to skip AP Calc AB, OR B- in AP Calc AB",
+    "RULE: AP Latin runs biannually in ODD start years only: 2025-26 YES, 2026-27 NO, 2027-28 YES, 2028-29 NO. Advanced Latin Literature runs in the alternating EVEN start years: 2025-26 NO, 2026-27 YES, 2027-28 NO, 2028-29 YES.",
+    "List every other hard constraint as a separate RULE: string"
+  ]
+}
+
+Be completely exhaustive on allCourses — list every course from every department exactly as named in the POS. This is the single most important part of your output.`;
+
+  contentParts.push({ type: 'text', text: extractPrompt });
+
+  const response = await fetch(`${PROXY_URL}/v1/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 16000,
+      tools: state.posUrl ? [{ type: 'web_search_20250305', name: 'web_search' }] : undefined,
+      messages: [{ role: 'user', content: contentParts }]
+    })
+  });
+
+  const data = await response.json();
+  const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+  try { const j = extractOutermostJson(text); return j ? JSON.parse(j) : null; } catch(e) { return null; }
+}
+
+// ══════════════════════════════════════════════════════
+// PLAN SANITIZER — enforces rules in code after AI output
+// These rules are too important to rely on prompts alone
+// ══════════════════════════════════════════════════════
+
+function normalizeCourseName(name) {
+  if (!name) return '';
+  // NOTE: Do NOT strip level prefixes — "AP Chemistry" and "Honors Chemistry"
+  // are different courses. Stripping would cause false duplicate detection.
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s]/g, '')  // remove punctuation only
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Call Claude to pick the best replacement for a duplicate course
+async function resolveReplacement(slot, originalCourse, grade, globalUsedCourses, posRules, studentProfile) {
+  // Build eligible course list from POS for this slot/grade
+  let candidates = [];
+  if (slot === 'Elective 1' || slot === 'Elective 2') {
+    candidates = posRules?.allCourses?.electives || [];
+  } else {
+    const key = slot.toLowerCase().replace(/\s+/g, '');
+    candidates = posRules?.allCourses?.[key] ||
+                 posRules?.allCourses?.['socialstudies'] ||
+                 posRules?.allCourses?.['worldlanguage'] || [];
+  }
+
+  // Filter: must be available for this grade and not already used
+  const eligible = candidates.filter(c => {
+    const key = normalizeCourseName(c.name || '');
+    const gradeOk = !c.grades || c.grades.includes(String(grade));
+    return !globalUsedCourses.has(key) && gradeOk && c.name;
+  });
+
+  if (!eligible.length) {
+    return {
+      course: 'Study Hall',
+      level: 'CP',
+      prerequisite: '',
+      notes: `"${originalCourse}" was already scheduled. No eligible replacement found for Grade ${grade} ${slot}. Study Hall added.`
+    };
+  }
+
+  // Build eligible list string for prompt
+  const eligibleStr = eligible
+    .map(c => `"${c.name}" [${c.level || 'CP'}]${c.department ? ' (' + c.department + ')' : ''}`)
+    .join('\n');
+
+  const prompt = `You are a high school academic advisor fixing a schedule conflict.
+
+STUDENT: Grade ${grade}, Interests: ${(studentProfile.interests||[]).join(', ')||'not specified'}, Career: ${studentProfile.careerGoal||'not specified'}, Target: ${studentProfile.collegeTier||'not specified'}
+
+PROBLEM: "${originalCourse}" cannot be used in Grade ${grade} — it was already scheduled in a previous year.
+SLOT: ${slot}
+
+ELIGIBLE REPLACEMENTS (confirmed available for Grade ${grade}, not yet scheduled):
+${eligibleStr}
+
+Choose the SINGLE BEST course from the eligible list that:
+1. Best fits this student's interests and career direction
+2. Is the most strategically valuable for their college target
+3. Has not been used in any other year
+
+Return ONLY valid JSON:
+{
+  "course": "exact course name from eligible list above",
+  "level": "AP or Honors or CP",
+  "prerequisite": "prerequisite or empty string",
+  "notes": "one sentence: why this course was chosen as the best replacement"
+}`;
+
+  try {
+    const resp = await fetch(`${PROXY_URL}/v1/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const result = (() => { try { const j = extractOutermostJson(text); return j ? JSON.parse(j) : null; } catch(e) { return null; } })();
+    if (result) {
+      // Verify Claude picked a real eligible course
+      const chosen = eligible.find(c =>
+        normalizeCourseName(c.name) === normalizeCourseName(result.course)
+      );
+      if (chosen) {
+        return {
+          course: chosen.name,
+          level: result.level || chosen.level || 'CP',
+          prerequisite: result.prerequisite || '',
+          notes: result.notes || `Replaces duplicate "${originalCourse}". Selected based on student interests.`
+        };
+      }
+    }
+  } catch(e) {
+    console.warn('resolveReplacement API call failed:', e);
+  }
+
+  // Fallback: pick highest-level eligible course
+  const fallback = eligible.find(c => c.level === 'AP') ||
+                   eligible.find(c => c.level === 'Honors') ||
+                   eligible[0];
+  return {
+    course: fallback.name,
+    level: fallback.level || 'CP',
+    prerequisite: '',
+    notes: `Auto-selected to replace duplicate "${originalCourse}" in Grade ${grade} ${slot}.`
+  };
+}
+
+async function sanitizePlan(plan, posRules, studentProfile) {
+  if (!plan || !Array.isArray(plan.gradePlans)) return plan;
+
+  // ── AP science detection: course must be in Science slot AND start with "AP" ──
+  // ── AP Science safelist — ONLY these courses require a study hall ──
+  // AP Seminar, AP Research, AP Statistics, AP Human Geography, AP Gov etc. do NOT require study hall
+  const AP_SCIENCE_COURSES = new Set([
+    'ap biology', 'ap chemistry', 'ap environmental science',
+    'ap physics 1', 'ap physics 2', 'ap physics c',
+    'ap physics c: mechanics', 'ap physics c: electricity and magnetism',
+    'ap physics c mechanics', 'ap physics c electricity and magnetism'
+  ]);
+
+  const isAPScience = (course, slot) => {
+    if (!course) return false;
+    const courseLower = course.trim().toLowerCase();
+    const slotLower = (slot || '').trim().toLowerCase();
+    // Must EITHER be in Science slot AND start with AP, AND be on the safelist
+    // The safelist is the authoritative check — slot alone is not sufficient
+    return AP_SCIENCE_COURSES.has(courseLower) ||
+      (slotLower === 'science' && AP_SCIENCE_COURSES.has(courseLower));
+  };
+
+  // ── Year calculation ──
+  const CURRENT_GRADE = parseInt(state.student.currentGrade) || 9;
+  // schoolYear = the year the student COMPLETED their most recent grade
+  // e.g. completed G10 in 2025-26 means schoolYear=2025, so G11 starts in 2026-27
+  // Formula: yearStart = schoolYear + (grade - completedGrade)
+  // schoolYear = the year the student is ENTERING (their first planned grade year)
+  // e.g. entering G11 in 2026-27 → schoolYear = 2026
+  // yearStart(G11) = 2026, yearStart(G12) = 2027
+  const ENTERING_YEAR = parseInt(state.student.schoolYear) || 2025;
+  const FIRST_PLANNED_GRADE = CURRENT_GRADE + 1;
+  function getSchoolYearStart(grade) {
+    return ENTERING_YEAR + (grade - FIRST_PLANNED_GRADE);
+  }
+
+  // ── Biannual rules ──
+  const BIANNUAL_RULES = [
+    {
+      course: 'AP Latin',
+      level: 'AP',
+      availableWhen: (y) => y % 2 === 1, // 2025, 2027...
+      alternative: 'Advanced Latin Literature',
+      altLevel: 'Honors',
+      altNote: 'AP Latin not available in {year} (offered in alternating years only). Replaced with Advanced Latin Literature.'
+    },
+    {
+      course: 'Advanced Latin Literature',
+      level: 'Honors',
+      availableWhen: (y) => y % 2 === 0, // 2026, 2028...
+      alternative: 'AP Latin',
+      altLevel: 'AP',
+      altNote: 'Advanced Latin Literature not available in {year} (offered in alternating years only). Replaced with AP Latin.'
+    }
+  ];
+
+  function checkBiannual(courseName, yearStart) {
+    const rule = BIANNUAL_RULES.find(r => normalizeCourseName(r.course) === normalizeCourseName(courseName));
+    if (!rule) return { available: true };
+    const available = rule.availableWhen(yearStart);
+    return {
+      available,
+      alternative: available ? null : rule.alternative,
+      altLevel:    available ? null : rule.altLevel,
+      notes: available ? null : rule.altNote.replace('{year}', `${yearStart}-${String(yearStart+1).slice(2)}`)
+    };
+  }
+
+  // ── Detect student's world language from transcript ──
+  const detectStudentLanguage = () => {
+    const completed = plan.snapshot?.completedCourses || [];
+    const langKeywords = {
+      french: ['french', 'français'],
+      spanish: ['spanish'],
+      latin: ['latin'],
+      mandarin: ['mandarin', 'chinese'],
+      italian: ['italian'],
+      german: ['german']
+    };
+    const langCounts = {};
+    for (const c of completed) {
+      const name = (c.course || '').toLowerCase();
+      for (const [lang, keywords] of Object.entries(langKeywords)) {
+        if (keywords.some(k => name.includes(k))) {
+          langCounts[lang] = (langCounts[lang] || 0) + 1;
+        }
+      }
+    }
+    const sorted = Object.entries(langCounts).sort((a,b) => b[1]-a[1]);
+    return sorted.length > 0 ? sorted[0][0] : null;
+  };
+  const studentLanguage = detectStudentLanguage();
+
+  // ── Grade scale for prerequisite threshold comparisons ──
+  const GRADE_SCALE = {
+    'A+':4.3,'A':4.0,'A-':3.7,'B+':3.3,'B':3.0,'B-':2.7,
+    'C+':2.3,'C':2.0,'C-':1.7,'D+':1.3,'D':1.0,'D-':0.7,'F':0
+  };
+
+  // Build transcript grade lookup: normalizedCourseName → grade string
+  const transcriptGrades = {};
+  if (Array.isArray(plan.snapshot?.completedCourses)) {
+    plan.snapshot.completedCourses.forEach(c => {
+      if (c.course && c.grade) {
+        transcriptGrades[normalizeCourseName(c.course)] = c.grade;
+      }
+    });
+  }
+
+  // Find the student's grade in any transcript course matching a keyword
+  function findTranscriptGrade(keywords) {
+    for (const [key, grade] of Object.entries(transcriptGrades)) {
+      if (keywords.some(kw => key.includes(kw.toLowerCase()))) return grade;
+    }
+    return null;
+  }
+
+  // Check if a grade meets a minimum threshold
+  function meetsThreshold(actualGrade, minGrade) {
+    if (!actualGrade || !GRADE_SCALE[actualGrade] === undefined) return true; // unknown — don't block
+    const actual = GRADE_SCALE[actualGrade];
+    const min = GRADE_SCALE[minGrade];
+    if (actual === undefined || min === undefined) return true;
+    return actual >= min;
+  }
+
+  // ── Course-specific prerequisite overrides ──
+  // Handles courses where the threshold differs by which level of prereq the student took.
+  // Each entry is an ordered list — first matching prereq keyword wins.
+  const PREREQ_OVERRIDES = {
+    'ap us history': [
+      // POS: "A- or better in Honors Global History 2 OR A+ in Global History 2"
+      { keywords: ['honors global history', 'honors global'], minGrade: 'A-', fallback: 'Honors US History' },
+      { keywords: ['global history', 'global hist'],          minGrade: 'A+', fallback: 'Honors US History' }
+    ],
+    'ap united states history': [
+      { keywords: ['honors global history', 'honors global'], minGrade: 'A-', fallback: 'Honors US History' },
+      { keywords: ['global history', 'global hist'],          minGrade: 'A+', fallback: 'Honors US History' }
+    ],
+    'ap chemistry': [
+      { keywords: ['honors chemistry', 'honors chem'],        minGrade: 'B-', fallback: null },
+      { keywords: ['chemistry', 'chem'],                      minGrade: 'A-', fallback: 'Honors Chemistry' }
+    ],
+    'ap biology': [
+      { keywords: ['honors biology', 'honors bio'],           minGrade: 'B-', fallback: null },
+      { keywords: ['biology', 'bio'],                         minGrade: 'A-', fallback: 'Honors Biology' }
+    ],
+    'ap physics 1': [
+      { keywords: ['honors chemistry', 'honors chem'],        minGrade: 'B-', fallback: 'Honors Physics' },
+      { keywords: ['chemistry', 'chem'],                      minGrade: 'A-', fallback: 'Honors Physics' }
+    ],
+    'ap physics c': [
+      { keywords: ['ap physics 1', 'physics 1'],              minGrade: 'B-', fallback: 'AP Physics 1' },
+      { keywords: ['honors physics'],                         minGrade: 'B-', fallback: 'AP Physics 1' }
+    ],
+    'ap calculus bc': [
+      { keywords: ['ap calculus ab', 'calculus ab'],          minGrade: 'B-', fallback: 'AP Calculus AB' },
+      { keywords: ['honors precalculus', 'precalculus'],      minGrade: 'A-', fallback: 'AP Calculus AB' }
+    ]
+  };
+
+  // Check a recommended course against prerequisite rules.
+  // Returns null if qualified, or {reason, fallback} if not.
+  function checkPrerequisiteQualification(courseName, posRules) {
+    const normCourse = normalizeCourseName(courseName);
+
+    // ── 1. Check course-specific overrides first (most accurate) ──
+    const overrides = PREREQ_OVERRIDES[normCourse];
+    if (overrides) {
+      for (const override of overrides) {
+        const studentGrade = findTranscriptGrade(override.keywords);
+        if (!studentGrade) continue; // this prereq not on transcript — try next
+
+        if (!meetsThreshold(studentGrade, override.minGrade)) {
+          const fallback = override.fallback || findFallbackCourse(courseName, studentGrade, posRules);
+          return {
+            reason: `Student earned ${studentGrade} in prerequisite — minimum required is ${override.minGrade}`,
+            prereqCourse: override.keywords[0],
+            studentGrade,
+            minGrade: override.minGrade,
+            fallback
+          };
+        }
+        return null; // prereq found and threshold met
+      }
+      return null; // no matching prereq on transcript — can't verify, don't block
+    }
+
+    // ── 2. Fall back to POS courseRules for all other courses ──
+    if (!posRules?.courseRules) return null;
+    const rule = posRules.courseRules.find(r =>
+      normalizeCourseName(r.course || '') === normCourse
+    );
+    if (!rule) return null;
+
+    const minGrade = rule.minGradeInPrereq;
+    if (!minGrade) return null; // no minimum grade requirement
+
+    // Find the prerequisite courses listed in the rule
+    const prereqs = rule.prerequisites || [];
+    if (!prereqs.length) return null;
+
+    // For each prerequisite, check the student's transcript grade
+    for (const prereq of prereqs) {
+      // Extract keywords from prereq string to find matching transcript course
+      const prereqWords = prereq.toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .split(/\s+/)
+        .filter(w => w.length > 3 && !['with','and','the','from','must','have','taken','course','grade','pass','complete'].includes(w));
+
+      if (!prereqWords.length) continue;
+
+      const studentGrade = findTranscriptGrade(prereqWords);
+      if (!studentGrade) continue; // prereq not on transcript — student may not have taken it yet
+
+      if (!meetsThreshold(studentGrade, minGrade)) {
+        // Find what level the student CAN take
+        // Look for the non-AP / Honors version of the course
+        const fallbackCourse = findFallbackCourse(courseName, studentGrade, posRules);
+        return {
+          reason: `Student earned ${studentGrade} in prerequisite "${prereq}" — minimum required is ${minGrade}`,
+          prereqCourse: prereq,
+          studentGrade,
+          minGrade,
+          fallback: fallbackCourse
+        };
+      }
+    }
+    return null; // all prerequisites met
+  }
+
+  // Find the appropriate lower-level course when a student doesn't qualify for AP/Honors
+  function findFallbackCourse(courseName, studentGrade, posRules) {
+    const norm = normalizeCourseName(courseName);
+    const gradeVal = GRADE_SCALE[studentGrade] || 0;
+
+    // Try to find Honors version if AP was blocked, or CP version if Honors was blocked
+    if (!posRules?.courseRules) return null;
+
+    const isAP = courseName.trim().toUpperCase().startsWith('AP ');
+    const isHonors = courseName.toLowerCase().includes('honors');
+
+    // Extract the subject name from the course
+    const subjectWords = norm
+      .replace(/^(ap|honors|enriched|cp)\s+/, '')
+      .split(/\s+/)
+      .slice(0, 3)
+      .join(' ');
+
+    if (isAP) {
+      // Look for Honors version of same subject
+      const honorsMatch = posRules.courseRules.find(r => {
+        const rNorm = normalizeCourseName(r.course || '');
+        return r.level === 'Honors' && rNorm.includes(subjectWords);
+      });
+      if (honorsMatch) return honorsMatch.course;
+    }
+
+    if (isHonors) {
+      // Look for CP version
+      const cpMatch = posRules.courseRules.find(r => {
+        const rNorm = normalizeCourseName(r.course || '');
+        return r.level === 'CP' && rNorm.includes(subjectWords);
+      });
+      if (cpMatch) return cpMatch.course;
+    }
+
+    return null;
+  }
+
+  // Build globalUsed from transcript ONLY (not POS, not plan output) ──
+  const globalUsed = new Set();
+  if (Array.isArray(plan.snapshot?.completedCourses)) {
+    plan.snapshot.completedCourses.forEach(c => {
+      if (c.course && c.course.trim()) {
+        globalUsed.add(normalizeCourseName(c.course));
+      }
+    });
+  }
+
+  // Snapshot of transcript-only completions for terminal course detection.
+  // transcriptUsed never gets augmented with in-plan courses — terminal conversion
+  // only fires for courses the student genuinely completed before this plan started.
+  const transcriptUsed = new Set(globalUsed);
+
+  // ── Terminal course definitions — used in both Pass 2b and Pass 3 ──
+  const TERMINAL_COURSES_MAP = {
+    'Mathematics':    ['ap calculus bc', 'ap calculus ab'],
+    'Social Studies': ['ap economics', 'ap macroeconomics']
+  };
+
+  const SLOT_TO_SUBJECT = {
+    'Elective 3': 'Mathematics',
+    'Elective 4': 'Social Studies'
+  };
+
+  // ── Process each grade plan in order ──
+  for (const gradePlan of plan.gradePlans) {
+    const schedule = gradePlan.schedule || gradePlan.courses || [];
+    if (!schedule.length) continue;
+    const grade = parseInt(gradePlan.grade) || 11;
+    const yearStart = getSchoolYearStart(grade);
+
+    // ── PASS 1: Fix biannual course availability ──
+    // Biannual availability is a hard school calendar constraint — always swap,
+    // regardless of whether the alternative appears in globalUsed from another year.
+    // (A student can't take a course that literally isn't offered that year.)
+    for (let i = 0; i < schedule.length; i++) {
+      const c = schedule[i];
+      if (!c.course) continue;
+      const bi = checkBiannual(c.course, yearStart);
+      if (!bi.available && bi.alternative) {
+        // Always replace — school calendar availability is non-negotiable
+        // Also set the correct level: Advanced Latin Literature = Honors, AP Latin = AP
+        schedule[i] = {
+          ...c,
+          course: bi.alternative,
+          level: bi.altLevel || c.level,
+          notes: bi.notes + (c.notes ? ' | ' + c.notes : ''),
+          _swappedFromBiannual: c.course
+        };
+      }
+    }
+
+    // ── PASS 2: AP science → Study Hall ──
+    // Count AP science courses in Science slot ONLY
+    const apSciCourses = schedule.filter(c => isAPScience(c.course, c.slot));
+    const apSciCount = apSciCourses.length;
+
+    if (apSciCount > 0) {
+      const hasStudyHall = schedule.some(c => (c.course||'').toLowerCase() === 'study hall');
+      if (!hasStudyHall) {
+        // Replace Elective 2 with Study Hall
+        const e2idx = schedule.findIndex(c => (c.slot||'') === 'Elective 2' && (c.course||'').toLowerCase() !== 'study hall');
+        if (e2idx !== -1) {
+          const displaced = schedule[e2idx].course;
+          schedule[e2idx] = {
+            slot: 'Elective 2',
+            course: 'Study Hall',
+            level: 'CP',
+            prerequisite: '',
+            notes: `Required: ${apSciCourses.map(c=>c.course).join(' + ')} require${apSciCount>1?' (shared)':''} one study hall in place of an elective. "${displaced}" was displaced.`,
+            priority: 'normal',
+            _displacedCourse: displaced
+          };
+        }
+      }
+    }
+
+    // ── PASS 0: Promote AP Seminar (G10) and AP Research (G11) ──
+    // AP Seminar should be in Grade 10 for Ivy-track students (unless already on transcript)
+    // AP Research MUST follow AP Seminar in Grade 11
+    const apSeminarOnTranscript = Object.keys(transcriptGrades).some(k =>
+      k.includes('ap seminar') || k.includes('seminar')
+    );
+    const apResearchOnTranscript = Object.keys(transcriptGrades).some(k =>
+      k.includes('ap research') || k.includes('research')
+    );
+    const isIvyTrack = (state.collegeTier || '').includes('Ivy') || (state.collegeTier || '').includes('Top 10') || (state.collegeTier || '').includes('Top 20');
+
+    if (grade === 10 && !apSeminarOnTranscript && isIvyTrack) {
+      // Check if AP Seminar is already in this schedule
+      const hasSeminar = schedule.some(c => (c.course||'').toLowerCase().includes('seminar'));
+      if (!hasSeminar) {
+        // Find an elective slot that doesn't have a high-value AP course
+        // Prefer replacing a non-AP elective over an AP one
+        const replaceIdx = schedule.findIndex(c => {
+          const slot = (c.slot||'');
+          const course = (c.course||'').toLowerCase();
+          return (slot === 'Elective 1' || slot === 'Elective 2') &&
+            course !== 'study hall' &&
+            !course.includes('ap research') &&
+            !course.startsWith('ap '); // don't replace other AP electives
+        }) ?? schedule.findIndex(c =>
+          (c.slot||'') === 'Elective 2' && (c.course||'').toLowerCase() !== 'study hall'
+        );
+
+        if (replaceIdx !== -1) {
+          const displaced = schedule[replaceIdx].course;
+          schedule[replaceIdx] = {
+            slot: schedule[replaceIdx].slot,
+            course: 'AP Seminar',
+            level: 'AP',
+            prerequisite: 'Teacher recommendation',
+            notes: `Recommended for ${state.collegeTier} track. Leads to AP Research in G11 and AP Capstone Diploma. "${displaced}" was displaced — consider scheduling in another year.`,
+            priority: 'high',
+            _promotedSeminar: true,
+            _displacedCourse: displaced
+          };
+        }
+      }
+    }
+
+    if (grade === 11 && apSeminarOnTranscript && !apResearchOnTranscript) {
+      const hasResearch = schedule.some(c => (c.course||'').toLowerCase().includes('ap research'));
+      if (!hasResearch) {
+        const replaceIdx = schedule.findIndex(c => {
+          const slot = (c.slot||'');
+          const course = (c.course||'').toLowerCase();
+          return (slot === 'Elective 1' || slot === 'Elective 2') &&
+            course !== 'study hall' && !course.includes('ap research');
+        });
+        if (replaceIdx !== -1) {
+          const displaced = schedule[replaceIdx].course;
+          schedule[replaceIdx] = {
+            slot: schedule[replaceIdx].slot,
+            course: 'AP Research',
+            level: 'AP',
+            prerequisite: 'AP Seminar completed with passing exam score',
+            notes: `Required for AP Capstone Diploma. Follows AP Seminar from transcript. "${displaced}" was displaced.`,
+            priority: 'high',
+            _promotedResearch: true,
+            _displacedCourse: displaced
+          };
+        }
+      }
+    }
+
+    // ── PASS 1a: Enforce prerequisite grade thresholds against transcript ──
+    // Check every recommended course against POS prerequisite rules.
+    // If the student's transcript grade in the prereq course is below the minimum,
+    // downgrade to the appropriate lower-level course.
+    if (posRules?.courseRules?.length) {
+      for (let i = 0; i < schedule.length; i++) {
+        const c = schedule[i];
+        if (!c.course || (c.course||'').toLowerCase() === 'study hall') continue;
+        if ((c.slot||'').toLowerCase() === 'pe/health') continue;
+
+        const disqualification = checkPrerequisiteQualification(c.course, posRules);
+        if (disqualification) {
+          const fallback = disqualification.fallback;
+          schedule[i] = {
+            ...c,
+            course: fallback || c.course,
+            level: fallback
+              ? (fallback.toUpperCase().startsWith('AP ') ? 'AP' : fallback.toLowerCase().includes('honors') ? 'Honors' : 'CP')
+              : c.level,
+            notes: `⚠️ Prerequisite not met: ${disqualification.reason}.${fallback ? ` Downgraded to "${fallback}".` : ' Please consult counselor for appropriate placement.'}`,
+            priority: 'normal',
+            _prereqDowngrade: {
+              originalCourse: c.course,
+              reason: disqualification.reason,
+              studentGrade: disqualification.studentGrade,
+              minGrade: disqualification.minGrade
+            }
+          };
+        }
+      }
+    }
+
+    // ── PASS 1b: Enforce world language continuity — replace wrong language with correct one ──
+    if (studentLanguage) {
+      const wlIdx = schedule.findIndex(c => (c.slot||'').toLowerCase() === 'world language');
+      if (wlIdx !== -1) {
+        const currentCourse = (schedule[wlIdx].course || '').toLowerCase();
+        const isWrongLanguage = !currentCourse.includes(studentLanguage) &&
+          (currentCourse.includes('latin') || currentCourse.includes('french') ||
+           currentCourse.includes('spanish') || currentCourse.includes('mandarin') ||
+           currentCourse.includes('german') || currentCourse.includes('italian'));
+
+        if (isWrongLanguage) {
+          const wrongCourse = schedule[wlIdx].course;
+
+          // Find the correct replacement course from POS
+          // Strategy: look at what language courses the student has already completed,
+          // find the highest level completed, then pick the next one in sequence
+          const completedLangCourses = Object.keys(transcriptGrades)
+            .filter(k => k.includes(studentLanguage))
+            .map(k => ({
+              name: k,
+              // Extract level number from course name (French I=1, French II=2, etc.)
+              level: (() => {
+                const m = k.match(/\b(i{1,3}|iv|v|1|2|3|4|5|6)\b/);
+                if (!m) return 0;
+                const roman = {'i':1,'ii':2,'iii':3,'iv':4,'v':5,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6};
+                return roman[m[1].toLowerCase()] || 0;
+              })()
+            }))
+            .sort((a,b) => b.level - a.level);
+
+          const highestCompleted = completedLangCourses[0]?.level || 0;
+          const nextLevel = highestCompleted + 1;
+
+          // Find matching course in POS for next level of this language
+          let replacement = null;
+          const langCoursesInPOS = posRules?.allCourses?.worldLanguage?.[studentLanguage] || [];
+
+          if (langCoursesInPOS.length) {
+            // Try to find course at next level — look for level number in course name
+            const nextLevelCourse = langCoursesInPOS.find(c => {
+              const name = c.name.toLowerCase();
+              const m = name.match(/\b(i{1,3}|iv|v|1|2|3|4|5|6)\b/);
+              if (!m) return false;
+              const roman = {'i':1,'ii':2,'iii':3,'iv':4,'v':5,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6};
+              const lvl = roman[m[1].toLowerCase()] || 0;
+              return lvl === nextLevel;
+            });
+
+            // Or find the course offered in this grade that hasn't been used yet
+            const gradeStr = String(grade);
+            const availableForGrade = langCoursesInPOS.filter(c =>
+              !c.grades || c.grades.includes(gradeStr)
+            );
+
+            replacement = nextLevelCourse || availableForGrade[availableForGrade.length - 1] || null;
+          }
+
+          // If POS doesn't have the language listed, build a reasonable course name
+          if (!replacement) {
+            const levelNames = ['', 'I', 'II', 'III', 'IV', 'AP'];
+            const levelStr = nextLevel <= 4 ? levelNames[nextLevel] : 'AP';
+            const langCapitalized = studentLanguage.charAt(0).toUpperCase() + studentLanguage.slice(1);
+            const isHonors = nextLevel >= 3;
+            const courseName = isHonors
+              ? `${langCapitalized} ${levelStr} Honors`
+              : `${langCapitalized} ${levelStr}`;
+            replacement = { name: courseName, level: isHonors ? 'Honors' : 'CP' };
+          }
+
+          schedule[wlIdx] = {
+            ...schedule[wlIdx],
+            course: replacement.name,
+            level: replacement.level || schedule[wlIdx].level,
+            notes: `Replaced "${wrongCourse}" — student's transcript shows ${studentLanguage.toUpperCase()} sequence. Continuing with next ${studentLanguage} course.`,
+            _replacedWrongLanguage: wrongCourse,
+            _expectedLanguage: studentLanguage
+          };
+        }
+      }
+    }
+
+
+    // The model sometimes outputs slot="Elective 3" for Mathematics based on our prompt rules.
+    // We reverse these unless the terminal course is genuinely on the transcript.
+    const SLOT_TO_SUBJECT = {
+      'Elective 3': 'Mathematics',
+      'Elective 4': 'Social Studies'
+    };
+    for (let i = 0; i < schedule.length; i++) {
+      const c = schedule[i];
+      const slot = c.slot || '';
+      if (slot === 'Elective 3' || slot === 'Elective 4') {
+        const originalSubject = SLOT_TO_SUBJECT[slot];
+        if (!originalSubject) continue;
+        const terminals = TERMINAL_COURSES_MAP[originalSubject] || [];
+        const isActuallyEarned = terminals.some(t => transcriptUsed.has(t));
+        if (!isActuallyEarned) {
+          // Revert back to the original subject slot
+          schedule[i] = {
+            ...c,
+            slot: originalSubject,
+            notes: (c.notes || '').replace(/\[.*?slot converted to elective.*?\]/g, '').trim(),
+            _convertedFromSubject: undefined
+          };
+        }
+      }
+    }
+
+    // ── PASS 3: Terminal course slot conversion (transcript only) ──
+
+    let electiveNum = 3;
+    for (const [subject, terminals] of Object.entries(TERMINAL_COURSES_MAP)) {
+      const isCompletedOnTranscript = terminals.some(t => transcriptUsed.has(t));
+      if (!isCompletedOnTranscript) continue;
+      const coreIdx = schedule.findIndex(c => (c.slot||'') === subject);
+      if (coreIdx === -1) continue;
+      schedule[coreIdx] = {
+        ...schedule[coreIdx],
+        slot: `Elective ${electiveNum}`,
+        notes: ((schedule[coreIdx].notes||'') + ` [${subject} sequence completed on transcript — slot converted to elective]`).trim(),
+        _convertedFromSubject: subject
+      };
+      electiveNum++;
+    }
+
+    // ── PASS 4: Deduplicate — only flag TRUE cross-year duplicates ──
+    // A course is a duplicate ONLY if it appears in globalUsed (transcript or prior grade plans)
+    // NOT if it merely appears in the POS course list
+    const violations = [];
+    for (let i = 0; i < schedule.length; i++) {
+      const c = schedule[i];
+      if (!c.course || !c.course.trim()) continue;
+      const courseLower = (c.course||'').toLowerCase();
+      if (courseLower === 'study hall') continue;
+      if (courseLower === 'physical education' || (c.slot||'').toLowerCase().includes('pe')) continue;
+      if ((c.slot||'').toLowerCase() === 'pe/health') continue;
+
+      const key = normalizeCourseName(c.course);
+      if (globalUsed.has(key)) {
+        violations.push({ idx: i, course: c.course, slot: c.slot });
+      } else {
+        // Add to globalUsed NOW so later grades in this same plan see it as used
+        globalUsed.add(key);
+      }
+    }
+
+    // ── PASS 5: Resolve duplicates with real replacements ──
+    for (const { idx, course, slot } of violations) {
+      const replacement = await resolveReplacement(slot, course, grade, globalUsed, posRules, studentProfile);
+      schedule[idx] = {
+        slot: schedule[idx].slot,
+        course: replacement.course,
+        level: replacement.level,
+        prerequisite: replacement.prerequisite,
+        notes: replacement.notes,
+        priority: 'normal',
+        _replacedDuplicate: course
+      };
+      globalUsed.add(normalizeCourseName(replacement.course));
+    }
+
+    if (gradePlan.schedule) gradePlan.schedule = schedule;
+    else gradePlan.courses = schedule;
+
+    // Recount APs (exclude Study Hall slot)
+    gradePlan.apCount = String(
+      schedule.filter(c => c.level === 'AP' && (c.course||'').toLowerCase() !== 'study hall').length
+    );
+  }
+
+  const notes = plan.schoolSpecificNotes || [];
+  notes.unshift('Schedule verified: AP science courses require one Study Hall replacing one elective slot. Two AP sciences share one study hall.');
+  plan.schoolSpecificNotes = notes;
+  plan._sanitized = true;
+  return plan;
+}
+// ── JSON repair utilities ──
+
+function repairTruncatedJson(jsonStr) {
+  // Count open/close braces and brackets to figure out what's missing
+  let braces = 0, brackets = 0;
+  let inString = false, escape = false;
+  for (const ch of jsonStr) {
+    if (escape) { escape = false; continue; }
+    if (ch === '\\' && inString) { escape = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') braces++;
+    else if (ch === '}') braces--;
+    else if (ch === '[') brackets++;
+    else if (ch === ']') brackets--;
+  }
+  // Close any open strings, brackets, braces
+  let repaired = jsonStr.trimEnd();
+  if (inString) repaired += '"';
+  // If we ended mid-value, add null to close it
+  if (repaired.endsWith(':')) repaired += 'null';
+  if (repaired.endsWith(',')) repaired = repaired.slice(0, -1);
+  while (brackets > 0) { repaired += ']'; brackets--; }
+  while (braces > 0) { repaired += '}'; braces--; }
+  return repaired;
+}
+
+async function repairJsonViaApi(brokenText) {
+  try {
+    const repairPrompt = `The following text is a truncated or malformed JSON response. Extract and return ONLY a valid, complete JSON object from it. If the JSON is truncated, complete it with reasonable placeholder values for any missing fields. Return ONLY the JSON, no explanation.
+
+MALFORMED TEXT:
+${brokenText.substring(0, 6000)}`;
+
+    const resp = await fetch(`${PROXY_URL}/v1/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: repairPrompt }]
+      })
+    });
+    const data = await resp.json();
+    const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    try { const j = extractOutermostJson(text); if (j) return JSON.parse(j); } catch(e2) {}
+  } catch(e) {
+    console.error('JSON repair failed:', e);
+  }
+  return null;
+}
+
+// ── Shared API call helper for plan generation ──
+async function callPlanApi(contentParts) {
+  const response = await fetch(`${PROXY_URL}/v1/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 8000,
+      messages: [{ role: 'user', content: contentParts }]
+    })
+  });
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    const msg = errData?.error?.message || response.statusText || 'Unknown error';
+    if (response.status === 502) {
+      throw new Error(`Gateway error (502) — the proxy timed out on a large request. Try again; it usually works on the second attempt. Detail: ${msg}`);
+    }
+    if (response.status === 529) {
+      throw new Error(`Anthropic API overloaded (529) — try again in a moment.`);
+    }
+    if (response.status === 401) {
+      throw new Error(`API key invalid or expired (401). Check your ANTHROPIC_API_KEY in the Cloudflare Worker settings.`);
+    }
+    throw new Error(`API error ${response.status}: ${msg}`);
+  }
+
+  const data = await response.json();
+  if (data.error) throw new Error(`API error: ${data.error.message || JSON.stringify(data.error)}`);
+  return data;
+}
+
+// Extract the outermost JSON object from text that may have trailing content
+function extractOutermostJson(text) {
+  const start = text.indexOf('{');
+  if (start === -1) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (escape) { escape = false; continue; }
+    if (ch === '\\' && inString) { escape = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  // Never found closing brace — return everything from start (truncated)
+  return text.slice(start);
+}
+
+async function parsePlanResponse(data) {
+  const rawText = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  if (!rawText) throw new Error(`Empty API response. Stop reason: ${data.stop_reason || 'unknown'}`);
+
+  // Extract the outermost JSON object precisely — stops at matching closing brace,
+  // ignoring any trailing text or commentary Claude adds after the JSON
+  let jsonStr = extractOutermostJson(rawText);
+  if (!jsonStr) throw new Error('No JSON object found in response');
+
+  // If truncated (hit token limit), attempt structural repair
+  if (data.stop_reason === 'max_tokens') {
+    jsonStr = repairTruncatedJson(jsonStr);
+  }
+
+  try {
+    return JSON.parse(jsonStr);
+  } catch(e) {
+    console.warn('Parse failed, attempting repair…', e.message);
+    const repaired = await repairJsonViaApi(rawText);
+    if (repaired) return repaired;
+    throw new Error(`Could not parse response: ${e.message}. Text starts: ${rawText.substring(0, 150)}`);
+  }
+}
+
+// ── PHASE 2: Generate plan using POS as single source of truth ──
+async function generatePlan() {
+  try {
+    const updateStep = (idx) => {
+      for (let i = 0; i < idx; i++) {
+        const el = document.getElementById(`ls${i}`);
+        if (el) { el.classList.remove('active'); el.classList.add('done'); el.querySelector('.step-icon').textContent = '✓'; }
+      }
+      const curr = document.getElementById(`ls${idx}`);
+      if (curr) curr.classList.add('active');
+      const titles = [
+        'Reading transcript & grades…',
+        'Fetching Program of Studies…',
+        'Extracting exact course list & schedule structure…',
+        'Cross-referencing transcript against POS…',
+        'Building Grade 9 & 10 schedules…',
+        'Building Grade 11 & 12 schedules…',
+        'Finalizing plan…'
+      ];
+      const title = document.getElementById('loadingTitle');
+      if (title && titles[idx]) title.textContent = titles[idx];
+    };
+
+    // ── Phase 1: Extract POS ──
+    updateStep(1);
+    let posRules = null;
+
+    if (state.posFound || state.posBase64 || state.posUrl) {
+      updateStep(2);
+      try {
+        posRules = await extractPosRules();
+        state.posRules = posRules;
+      } catch(e) {
+        console.warn('POS extraction failed:', e);
+      }
+    }
+
+    updateStep(3);
+
+    // ── Build transcript content parts — attach ALL uploaded transcripts ──
+    const contentParts = [];
+    if (state.transcripts && state.transcripts.length > 0) {
+      state.transcripts.forEach((t, i) => {
+        const label = t.label || `Transcript ${i + 1}`;
+        contentParts.push({ type: 'text', text: `--- DOCUMENT ${i + 1}: ${label} (${t.name}) ---` });
+        if (t.mediaType === 'image/jpeg' || t.mediaType === 'image/png') {
+          contentParts.push({ type: 'image', source: { type: 'base64', media_type: t.mediaType, data: t.base64 } });
+        } else if (t.mediaType === 'application/pdf') {
+          contentParts.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: t.base64 } });
+        }
+      });
+    }
+
+    updateStep(4);
+
+    // ── Build the POS rules block ──
+    const scheduleDesc = posRules?.scheduleStructure
+      ? `SCHEDULE STRUCTURE FROM POS:
+- Core subject slots (one per year, required): ${(posRules.scheduleStructure.coreSubjectSlots || []).join(' | ')}
+- Elective slots per year: ${posRules.scheduleStructure.electiveSlots || 2}
+- Required every year: ${(posRules.scheduleStructure.requiredSlots || []).join(', ')}
+- Total periods required per day: ${posRules.scheduleStructure.totalPeriodsPerDay || 7}
+- Double-period courses (count as 2 slots): ${(posRules.scheduleStructure.doublePeriodCourses || ['AP Physics C']).join(', ')}
+- Notes: ${posRules.scheduleStructure.notes || 'N/A'}
+
+STUDY HALL RULES — ENFORCE STRICTLY:
+- Maximum study halls per semester: ${posRules.scheduleStructure.studyHallRules?.maxStudyHallsPerSemester || 1}
+- Minimum courses required: ${posRules.scheduleStructure.studyHallRules?.minCoursesRequired || '6 courses plus PE/Health each semester'}
+- A student may add a study hall ONLY if they have fewer courses than the maximum and do NOT already have a study hall
+- A student may NOT have two study halls in the same semester under any circumstances
+- If a double-period course (e.g. AP Physics C) is scheduled, it occupies TWO elective/course slots in the schedule — account for this when counting total periods
+- If scheduling AP Physics C (7 credits, double period), the student effectively fills both elective slots with it plus has PE/Health — verify this does not leave them with only 5 academic courses, which would force an unwanted study hall
+
+EVERY GRADE PLAN MUST FOLLOW THIS STRUCTURE EXACTLY:
+Each year has exactly these slots:
+1. English (one course from the English department)
+2. Mathematics (one course from the Mathematics department)
+3. Science (one course from the Science department)
+4. Social Studies (one course from the Social Studies department)
+5. World Language (one course from the World Language department)
+6. Elective 1 (one approved elective — can be AP Seminar, AP Research, AP CS A, performing arts, etc.)
+7. Elective 2 (one approved elective — if AP Physics C is in Science slot, this slot is consumed by its lab period)
+8. Physical Education / Health (required each year)
+
+No more, no less. Every course must fit one of these slots.`
+      : `SCHEDULE STRUCTURE (standard NJ high school):
+Each year: English | Mathematics | Science | Social Studies | World Language | Elective 1 | Elective 2 | PE/Health
+AP SCIENCE STUDY HALL RULE: ONLY AP Biology, AP Chemistry, AP Environmental Science, AP Physics 1, AP Physics 2, AP Physics C require a study hall. AP Seminar, AP Statistics, AP Gov't, AP CS A and all other non-lab APs do NOT require a study hall.
+DOUBLE-PERIOD COURSES: AP Physics C meets two periods but still only requires the single study hall from the AP science rule.`;
+
+    const courseListBlock = posRules?.allCourses
+      ? `APPROVED COURSE LIST — ONLY USE NAMES FROM THIS LIST:
+You may ONLY recommend courses that appear in this list with their EXACT names as shown.
+Do not invent course names. Do not use shortened versions. If "AP English 11: Language & Composition" is the name, use that exactly.
+
+ENGLISH courses available:
+${(posRules.allCourses.english || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
+
+MATHEMATICS courses available:
+${(posRules.allCourses.mathematics || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
+
+SCIENCE courses available:
+${(posRules.allCourses.science || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
+
+SOCIAL STUDIES courses available:
+${(posRules.allCourses.socialStudies || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
+
+WORLD LANGUAGE — LATIN courses available:
+${(posRules.allCourses.worldLanguage?.latin || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
+
+WORLD LANGUAGE — SPANISH courses available:
+${(posRules.allCourses.worldLanguage?.spanish || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
+
+WORLD LANGUAGE — FRENCH courses available:
+${(posRules.allCourses.worldLanguage?.french || []).map(c => `  [${c.level}] "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
+
+ELECTIVES available (for elective slots only):
+${(posRules.allCourses.electives || []).map(c => `  [${c.level}] "${c.name}" (${c.department}) — Grades: ${(c.grades||[]).join(',')}`).join('\n')}
+
+PHYSICAL EDUCATION / HEALTH:
+${(posRules.allCourses.physicalEducation || []).map(c => `  "${c.name}" — Grades: ${(c.grades||[]).join(',')}`).join('\n')}`
+      : `COURSE LIST: Program of Studies not available — use general knowledge of course names for ${state.student.schoolName}.`;
+
+    const rulesBlock = posRules
+      ? `GRADUATION REQUIREMENTS:
+${JSON.stringify(posRules.graduationRequirements, null, 2)}
+
+AP LIMITS BY GRADE:
+${JSON.stringify(posRules.apLimits, null, 2)}
+
+HONORS/AP CRITERIA:
+${JSON.stringify(posRules.honorsCriteria, null, 2)}
+
+COURSE SEQUENCES (must follow order):
+${JSON.stringify(posRules.courseSequences, null, 2)}
+
+CRITICAL HARD RULES — NEVER VIOLATE:
+${(posRules.criticalRules || []).join('\n')}
+
+INDIVIDUAL COURSE PREREQUISITES:
+${(posRules.courseRules || []).map(r =>
+  `"${r.course}": prereqs=[${(r.prerequisites||[]).join('; ')}] minGrade=${r.minGradeInPrereq||'—'} coreqs=[${(r.corequisites||[]).join('; ')||'none'}] grades=[${(r.gradesOffered||[]).join(',')}]${r.biannual?' BIANNUAL':''}${r.notes?' NOTE:'+r.notes:''}`
+).join('\n')}`
+      : '';
+
+    const prompt = `You are an expert high school academic advisor. Build a precise academic plan.
+${contentParts.length > 0 ? `${state.transcripts.length} transcript document${state.transcripts.length > 1 ? 's are' : ' is'} attached above (${state.transcripts.map(t => t.label || t.name).join(', ')}). Read ALL of them to build a complete course history across all years.` : ''}
+
+STUDENT:
+- Name: ${state.student.firstName} ${state.student.lastName}
+- School: ${state.student.schoolName}, ${state.student.town}, ${state.student.state}
+- Most Recent Grade Completed: ${state.student.currentGrade === '8' ? 'Grade 8 (entering 9th grade)' : 'Grade ' + state.student.currentGrade + ' (entering Grade ' + (parseInt(state.student.currentGrade)+1) + ')'}
+- GPA: ${state.student.gpa || 'Not provided'}
+- Interests: ${state.interests.join(', ') || 'Not specified'}
+- College Target: ${state.collegeTier}
+- Career Direction: ${state.careerGoal || 'Not specified'} ← THIS MUST DIRECTLY SHAPE SCIENCE AND ELECTIVE COURSE CHOICES. See CAREER TRACK COURSE REQUIREMENTS below.
+- Extracurriculars: ${state.student.extracurriculars || 'Not provided'}
+${state.student.manualGrades ? '- Manual grades:\n' + state.student.manualGrades : ''}
+
+════════════════════════════════════════════
+${scheduleDesc}
+════════════════════════════════════════════
+${courseListBlock}
+════════════════════════════════════════════
+${rulesBlock}
+════════════════════════════════════════════
+
+MANDATORY RULES — FOLLOW EVERY ONE:
+
+TRANSCRIPT RULES:
+T1. Read ALL attached transcripts carefully. Extract every completed and in-progress course with its grade.
+T2. NEVER recommend a course the student has already completed or is currently taking.
+T3. NEVER recommend the same course in two different future grade years.
+T4. CROSS-YEAR DUPLICATE CHECK: Scan all grade years — no course name appears more than once.
+T5. TRANSCRIPT DUPLICATE CHECK: Check every recommendation against completed transcript courses.
+T6. GRADE RANGE FOR PLAN — CRITICAL:
+    "Most Recent Grade Completed" means the student has FINISHED that grade. Plan starts from the NEXT grade.
+    - Completed Grade 8 → Plan: Grade 9, 10, 11, 12
+    - Completed Grade 9 → Plan: Grade 10, 11, 12
+    - Completed Grade 10 → Plan: Grade 11, 12
+    - Completed Grade 11 → Plan: Grade 12 only
+    All courses on the transcript are ALREADY DONE — never re-recommend them.
+T7. In completedCourses, list every course from the transcript with subject, course name, grade, and year.
+T8. PREREQUISITE GRADE QUALIFICATION — CRITICAL:
+    Before recommending any AP or Honors course, look up the student's actual grade in the prerequisite course from the transcript. Apply these grade thresholds:
+    - AP course from Honors prerequisite: student needs B- or better (general rule)
+    - AP course from CP prerequisite: student needs A- or better (general rule)
+    - Honors course from CP prerequisite: student needs B+ or better
+    - AP US HISTORY EXCEPTION (two thresholds, one course):
+        • From Honors Global History 2: A- or better → qualifies for AP US History
+        • From CP Global History 2: A+ only → qualifies for AP US History
+    - Examples:
+        • A- in Honors Global History 2 → qualifies for AP US History ✅
+        • B+ in Honors Global History 2 → does NOT qualify (below A-) → Honors US History
+        • A+ in CP Global History 2 → qualifies for AP US History ✅
+        • A in CP Global History 2 → does NOT qualify (needs A+) → Honors US History
+
+SCHEDULE STRUCTURE RULES:
+
+S1. THE FIVE CORE SLOTS: English | Mathematics | Science | Social Studies | World Language. These are permanent UNLESS converted per S3.
+
+S2. ELECTIVE SLOTS: 2 elective slots per year by default. Hold real courses OR Study Hall (AP science only). Study Hall is NOT a subject — it occupies an elective slot (set slot="Elective 2", course="Study Hall").
+
+S3. TERMINAL COURSE CONVERSION: When a student has ALREADY COMPLETED (appears on uploaded transcript) the highest available course in a subject, that core slot converts to an additional elective in all plan years.
+    - AP Calculus BC on transcript → Mathematics slot becomes Elective 3 in all planned grades
+    - Full social studies sequence on transcript → Social Studies slot becomes elective
+    - If the terminal course is only being recommended in this plan (not yet completed), do NOT convert — the student still needs that subject slot for the terminal course itself.
+    - DO NOT suggest courses beyond the terminal course. AP Calc BC is Ridge's highest math — do not suggest Multivariable Calculus or any course not in the approved list.
+
+S4. AP SCIENCE STUDY HALL: ONLY these specific AP lab science courses require a Study Hall in place of one elective slot:
+    AP Biology, AP Chemistry, AP Environmental Science, AP Physics 1, AP Physics 2, AP Physics C
+    ALL OTHER AP courses do NOT require a study hall — including AP Seminar, AP Research, AP Statistics, AP Human Geography, AP Gov't, AP CS A, AP Lang, AP Lit, AP Calc, AP Economics, AP History, AP Latin, AP Psychology.
+    - 0 AP lab sciences: 2 elective slots (+ converted slots)
+    - 1 or 2 AP lab sciences: 1 Study Hall + 1 elective slot. Two AP lab sciences SHARE one study hall. Never two study halls.
+
+S5. MAX ONE STUDY HALL per year.
+
+S6. ELECTIVE SPECIFICITY: Every elective slot MUST have a real, specific, named course from the approved list. No placeholders.
+
+S7. NEVER suggest a course not in the approved course list.
+
+S8. NEVER schedule fewer than 6 academic courses + PE/Health.
+COURSE NAME RULES:
+N1. ONLY use course names that appear exactly in the approved course list above.
+N2. Use the EXACT name as listed — including any colons, subtitles, or qualifiers.
+N3. If you cannot find an exact match in the course list, do not recommend that course.
+N4. The "slot" field must be one of: English | Mathematics | Science | Social Studies | World Language | Elective 1 | Elective 2 | Elective 3 | Elective 4 | PE/Health. Study Hall is NEVER a slot name — when Study Hall is needed, use slot="Elective 2" and course="Study Hall".
+N5. Converted core slots use: slot="Elective 3" (math converted), slot="Elective 4" (social studies converted), etc.
+N6. ELECTIVE SPECIFICITY: For every elective slot, choose a course that directly serves the student's stated career direction and interests. Examples for a pre-law student: Speech and Debate, Introduction to Law, Law Seminar, Entrepreneurship. Examples for a STEM student: AP Computer Science A, AP Statistics, Introduction to Computer Programming, Game Design & Development. Never use a generic placeholder — always pick the most strategically appropriate specific course from the approved electives list.
+
+SEQUENCE AND PREREQUISITE RULES:
+P1. PHYSICS TRACK — CRITICAL: 
+    - AP Physics 1 prerequisites: A- in Enriched Chemistry OR B- in Honors Chemistry, AND concurrent enrollment in Precalculus or higher.
+    - Honors Physics prerequisites: A- in Enriched Chemistry OR B- in Honors Chemistry, AND concurrent enrollment in Algebra II or higher.
+    - For an Ivy League / Top-10 track student who meets the prerequisites, ALWAYS recommend AP Physics 1 over Honors Physics. AP Physics 1 carries AP weight, has a 100% pass rate at Ridge, and is the stronger signal.
+    - Honors Physics is only appropriate when the student does NOT qualify for AP Physics 1 (weaker math placement or lower chemistry grade).
+    - BOTH AP Physics 1 and Honors Physics with B- unlock AP Physics C the following year.
+    - PREFERRED Ivy-track sequence: Honors Chemistry (G10) → AP Physics 1 (G11) → AP Physics C (G12).
+P2. NEVER place AP Physics C unless student has completed AP Physics 1 OR Honors Physics with B- minimum AND co-enrolls in AP Calc AB or BC in the same year.
+P3. NEVER exceed AP cap per grade.
+P4. NEVER recommend a course in a grade it is not offered.
+P5. NEVER skip a prerequisite.
+P6. Show co-requisite courses in the same year.
+P7. BIANNUAL COURSES — LATIN (Ridge-specific):
+    - AP Latin runs in ODD start years: 2025-26 ✅, 2026-27 ❌, 2027-28 ✅, 2028-29 ❌ — level: AP
+    - Advanced Latin Literature runs in EVEN start years: 2025-26 ❌, 2026-27 ✅, 2027-28 ❌, 2028-29 ✅ — level: HONORS (NOT AP)
+    - Rule: if yearStart % 2 === 1 (odd number like 2025, 2027) → AP Latin. If yearStart % 2 === 0 (even like 2026, 2028) → Advanced Latin Literature.
+    - THIS STUDENT's correct Latin assignments (calculated from their completed grade):
+${(() => {
+  const cg = parseInt(state.student.currentGrade) || 10;
+  const startGrade = cg + 1;
+  const lines = [];
+  for (let g = startGrade; g <= 12; g++) {
+    const enteringYear = parseInt(state.student.schoolYear)||2025;
+    const yearStart = enteringYear + (g - (cg + 1));
+    const isAPLatin = yearStart % 2 === 1;
+    lines.push(`      Grade ${g} = ${yearStart}-${String(yearStart+1).slice(2)} (year start ${yearStart}, ${yearStart%2===1?'ODD':'EVEN'}) → ${isAPLatin ? 'AP Latin ✅' : 'Advanced Latin Literature ✅'}`);
+  }
+  return lines.join('\n');
+})()}
+    - NEVER place AP Latin in a year when it does not run. The code will also enforce this — but do not rely on it.
+
+SOCIAL STUDIES SEQUENCE (Ridge):
+G9 = Honors Global History 2
+G10 = Honors US History OR AP US History — BUT ONLY IF GRADE QUALIFIES (see below)
+G11 = AP US Gov't & Politics/Economics (required third social studies credit)
+G12 = AP Economics or other social studies elective
+
+AP US HISTORY PREREQUISITES (Ridge) — exact thresholds from Program of Studies:
+- From Honors Global History 2: **A-** or better → qualifies for AP US History in G10
+- From Honors Global History 2: below A- → does NOT qualify → take Honors US History
+- From CP Global History 2: **A+** only → qualifies for AP US History in G10
+- From CP Global History 2: below A+ → does NOT qualify → take Honors US History
+
+PREREQUISITE GRADE CHECK — CRITICAL:
+Before recommending ANY AP or Honors course, check the student's actual grade in the prerequisite course on their transcript.
+- If the student earned a C- in Honors Global History 2, they do NOT qualify for AP US History — recommend Honors US History instead
+- If the student earned a B+ in English 9 (not Honors), they do NOT qualify for AP Lang directly — must go through Honors English 10 first
+- NEVER recommend an AP course if the student's grade in the prerequisite falls below the minimum threshold
+- When in doubt, recommend the next Honors level rather than AP, and note the grade constraint
+
+CAREER TRACK COURSE REQUIREMENTS — MANDATORY:
+The student's career direction must directly shape which science and elective courses are recommended. Apply these rules based on the stated career goal:
+
+MEDICINE / PRE-MED / HEALTHCARE track:
+- AP Biology is NON-NEGOTIABLE. Every pre-med student MUST take AP Biology. It is the single most important AP course for medicine-track students. Place it in the Science slot at the earliest available year after prerequisites are met (typically G11 or G12).
+- Recommended science sequence: Honors Chemistry → AP Chemistry OR AP Biology → AP Biology (if not yet taken) OR AP Physics → AP Physics C
+- Strongly recommend AP Chemistry in addition to AP Biology if schedule allows
+- Elective recommendations: AP Statistics (data analysis for medicine), AP Psychology, Health Sciences electives if available
+
+ENGINEERING / CS track:
+- AP Computer Science A is strongly recommended
+- AP Physics sequence: AP Physics 1 → AP Physics C
+- AP Calculus BC is essential
+- Elective recommendations: AP Statistics, AP CS A, AP CS Principles
+
+LAW / PRE-LAW track:
+- AP US History and AP US Gov't are essential
+- Speech and Debate, Introduction to Law, Law Seminar
+- AP English Language is critical
+- Elective recommendations: AP Gov't, Intro to Law, Law Seminar, Speech and Debate
+
+BUSINESS / FINANCE track:
+- AP Economics is essential
+- AP Statistics is strongly recommended
+- Elective recommendations: Entrepreneurship, AP Macroeconomics, AP Statistics
+
+UNDECIDED / GENERAL:
+- Follow the standard sequence, maximize AP count and rigor appropriate to GPA
+
+WORLD LANGUAGE CONTINUITY — CRITICAL:
+Read the transcript carefully to identify which language the student has been studying. Continue THAT language through the plan.
+- If the transcript shows French courses → ALL World Language slots must be French courses
+- If the transcript shows Spanish → ALL World Language slots must be Spanish
+- If the transcript shows Latin → continue Latin sequence
+- NEVER switch languages mid-plan. A student who has been taking French does NOT suddenly take Latin.
+- The Ridge-specific Latin rules (AP Latin biannual schedule) only apply if the student is ACTUALLY studying Latin per their transcript.
+
+
+AP CAPSTONE DIPLOMA — CRITICAL FOR IVY-TRACK STUDENTS:
+The AP Capstone Diploma requires AP Seminar + AP Research + 4 other AP exams. It is rare, prestigious, and highly valued by Ivy League and Top-20 admissions.
+
+AP SEMINAR IN GRADE 10:
+- AP Seminar is available to Grade 10 students at Ridge and counts toward the sophomore 2-AP cap
+- For any student targeting Ivy League / Top 10 / Top 20 colleges, AP Seminar SHOULD be recommended as one of the two elective slots in Grade 10 UNLESS the student already has it on their transcript
+- AP Seminar prerequisite at Ridge: teacher recommendation (no grade threshold) — assume eligible unless transcript shows otherwise
+- AP Seminar does NOT require a study hall
+- If AP Seminar is recommended in Grade 10, AP Research MUST be recommended in Grade 11 as the follow-up elective
+
+AP RESEARCH IN GRADE 11:
+- AP Research requires successful completion of AP Seminar (with exam)
+- If AP Seminar appears on the transcript → AP Research is MANDATORY in Grade 11 as an elective
+- AP Research does NOT require a study hall
+
+If AP Seminar appears on transcript with passing grade and exam taken → AP Research MUST be recommended in the next available year. Flag prominently.
+
+Return ONLY valid JSON:
+{
+  "snapshot": {
+    "completedCourses": [
+      {"year": "G9", "subject": "English", "course": "Honors English 9", "grade": "A-"},
+      {"year": "G10", "subject": "CS", "course": "AP Computer Science A", "grade": "A"}
+    ],
+    "apSeminarTaken": false,
+    "apResearchEligible": false,
+    "strengths": "string",
+    "watchAreas": "string",
+    "mathLevel": "string",
+    "scienceStatus": "string",
+    "languageStatus": "string",
+    "overallAssessment": "string"
+  },
+  "posRulesApplied": true,
+  "gradePlans": [
+    {
+      "grade": "9",
+      "year": "2025-26",
+      "theme": "Foundation Year",
+      "apCount": "0",
+      "schedule": [
+        {
+          "slot": "English",
+          "course": "AP English 11: Language & Composition",
+          "level": "AP",
+          "prerequisite": "B or better in Honors English 10: American Literature",
+          "notes": "Must earn B- or better to advance to AP English 12: Literature & Composition",
+          "priority": "high"
+        },
+        {
+          "slot": "Mathematics",
+          "course": "AP Calculus BC",
+          "level": "AP",
+          "prerequisite": "A or better in Honors Precalculus",
+          "notes": "Highest math course at Ridge",
+          "priority": "high"
+        },
+        {
+          "slot": "Science",
+          "course": "AP Physics 1",
+          "level": "AP",
+          "prerequisite": "B- or better in Honors Chemistry AND concurrent enrollment in Precalculus or higher",
+          "notes": "100% pass rate at Ridge. Unlocks AP Physics C in G12. Preferred over Honors Physics for Ivy-track students who qualify.",
+          "priority": "high"
+        },
+        {
+          "slot": "Social Studies",
+          "course": "AP US Gov't & Politics/Economics",
+          "level": "AP",
+          "prerequisite": "Completion of US History requirement",
+          "notes": "Required third social studies credit. 99% pass rate at Ridge.",
+          "priority": "normal"
+        },
+        {
+          "slot": "World Language",
+          "course": "Advanced Latin Literature",
+          "level": "Honors",
+          "prerequisite": "B- or better in Honors Latin III",
+          "notes": "AP Latin not offered in odd years — confirm year availability",
+          "priority": "normal"
+        },
+        {
+          "slot": "Elective 1",
+          "course": "AP Research",
+          "level": "AP",
+          "prerequisite": "Successful completion of AP Seminar including exam",
+          "notes": "Part of AP Capstone Diploma. Write paper on legal topic.",
+          "priority": "high"
+        },
+        {
+          "slot": "Elective 2",
+          "course": "AP Statistics",
+          "level": "AP",
+          "prerequisite": "B- or better in Honors Precalculus",
+          "notes": "Bridges math and career interest. 95% pass rate at Ridge.",
+          "priority": "normal"
+        },
+        {
+          "slot": "PE/Health",
+          "course": "Physical Education 11",
+          "level": "CP",
+          "prerequisite": "",
+          "notes": "Required each year",
+          "priority": "normal"
+        }
+      ],
+      "alertTitle": "Key Priority for Grade 11",
+      "alertItems": ["item 1", "item 2"],
+      "alertType": "teal"
+    }
+  ],
+  "roadmap": [
+    {
+      "subject": "English",
+      "slot": "English",
+      "g9": "Honors English 9",
+      "g10": "Honors English 10: American Literature",
+      "g11": "AP English 11: Language & Composition",
+      "g12": "AP English 12: Literature & Composition",
+      "highlight": "g11"
+    }
+  ],
+  "thresholds": [
+    {
+      "course": "Honors English 9",
+      "year": "G9",
+      "gradeNeeded": "B or better",
+      "unlocks": "Honors English 10: American Literature",
+      "consequence": "Falls to CP English 10: American Literature"
+    }
+  ],
+  "rigorStrategy": {
+    "careerTrackStrategy": "how the career direction specifically shaped this plan — which courses were chosen because of the career goal and why",
+    "englishPriority": "specific strategy",
+    "mathStrategy": "specific strategy",
+    "scienceStrategy": "specific science sequence and why each course was placed where it was — must reference career track",
+    "languageStrategy": "specific strategy",
+    "keyInsight": "single most important insight"
+  },
+  "schoolSpecificNotes": [
+    "Every POS rule that directly affects this student"
+  ],
+  "bottomLine": {
+    "title": "Bottom Line for ${state.student.firstName}",
+    "summary": "2-3 sentence summary",
+    "actions": ["5 specific prioritized next steps"]
+  }
+}`;
+
+    contentParts.push({ type: 'text', text: prompt });
+
+    updateStep(5);
+
+    // Determine which grades to plan
+    const currentGrade = parseInt(state.student.currentGrade) || 9;
+    const startGrade = currentGrade + 1; // form means "completed grade X", so plan starts at X+1
+    const allGrades = [];
+    for (let g = startGrade; g <= 12; g++) allGrades.push(g);
+
+    // Split into two batches so each response stays well within token limits
+    const midpoint = Math.ceil(allGrades.length / 2);
+    const batch1Grades = allGrades.slice(0, midpoint);
+    const batch2Grades = allGrades.slice(midpoint);
+
+    // CALL 1: Snapshot + first batch of grade plans + thresholds
+    const prompt1 = prompt + `\n\nFIRST CALL — generate ONLY these sections:\n- "snapshot" (complete)\n- "gradePlans" for grades: ${batch1Grades.join(', ')} ONLY\n- "thresholds" (complete)\n\nReturn ONLY valid JSON with exactly these three keys. Nothing else.`;
+
+    const parts1 = [...contentParts.slice(0, -1), { type: 'text', text: prompt1 }];
+    const raw1 = await callPlanApi(parts1);
+    const part1 = await parsePlanResponse(raw1);
+
+    updateStep(6);
+
+    // CALL 2: Remaining grades + roadmap + strategy + bottomLine
+    const gradesRemaining = batch2Grades.length > 0 ? batch2Grades.join(', ') : 'none';
+    const prompt2 = prompt + `\n\nSECOND CALL — grades ${batch1Grades.join(',')} already generated. Generate ONLY:\n- "gradePlans" for grades: ${gradesRemaining}\n- "roadmap" (complete 4-year table)\n- "rigorStrategy" (complete)\n- "schoolSpecificNotes" (complete)\n- "posRulesApplied": true\n- "bottomLine" (complete)\n\nReturn ONLY valid JSON with exactly these keys.`;
+
+    const parts2 = [...contentParts.slice(0, -1), { type: 'text', text: prompt2 }];
+    const raw2 = await callPlanApi(parts2);
+    const part2 = await parsePlanResponse(raw2);
+
+    // Merge both responses
+    const plan = {
+      snapshot: part1.snapshot || part2.snapshot || {},
+      posRulesApplied: true,
+      gradePlans: [...(part1.gradePlans || []), ...(part2.gradePlans || [])],
+      roadmap: part2.roadmap || part1.roadmap || [],
+      thresholds: part1.thresholds || part2.thresholds || [],
+      rigorStrategy: part2.rigorStrategy || part1.rigorStrategy || {},
+      schoolSpecificNotes: part2.schoolSpecificNotes || part1.schoolSpecificNotes || [],
+      bottomLine: part2.bottomLine || part1.bottomLine || {}
+    };
+
+    if (posRules) plan.posRulesExtracted = posRules;
+
+    const sanitized = await sanitizePlan(plan, posRules, {
+      interests: state.interests,
+      careerGoal: state.careerGoal,
+      collegeTier: state.collegeTier
+    });
+
+    state.plan = sanitized;
+    if (window._loadingTimerInterval) clearInterval(window._loadingTimerInterval);
+    render();
+
+  } catch (err) {
+    if (window._loadingTimerInterval) clearInterval(window._loadingTimerInterval);
+    console.error('generatePlan error:', err);
+    showToast('Error generating plan — see details below.', 'error');
+    const errContainer = document.getElementById('appContainer');
+    if (errContainer) {
+      errContainer.innerHTML += `
+      <div class="card" style="text-align:center;padding:3rem">
+        <p style="font-size:2rem;margin-bottom:1rem">⚠️</p>
+        <p style="font-weight:600;margin-bottom:0.5rem">Something went wrong</p>
+        <p style="color:var(--text3);font-size:0.88rem;margin-bottom:0.5rem;font-family:'DM Mono',monospace;background:var(--cream2);padding:0.75rem;border-radius:6px;text-align:left;max-width:500px;margin:0.5rem auto 1.5rem;word-break:break-word">${err.message}</p>
+        <p style="color:var(--text3);font-size:0.82rem;margin-bottom:1.5rem">This is usually caused by a very large plan (e.g. Grade 8 with 4 years to plan). Try again — it often succeeds on the second attempt.</p>
+        <button class="btn btn-primary" onclick="state.currentStep=3;state.plan=null;render()">← Try Again</button>
+      </div>`;
+    }
+  }
+}
+
+// RENDER RESULTS
+// ══════════════════════════════════════
+function renderResults(container) {
+  const p = state.plan;
+  const s = state.student;
+
+  const tabs = [
+    { id: 'snapshot', label: '📊 Snapshot' },
+    ...( p.gradePlans || []).map((g, i) => ({ id: `grade${g.grade}`, label: `Grade ${g.grade}` })),
+    { id: 'roadmap', label: '🗺 Roadmap' },
+    { id: 'rigor', label: '⚖️ Strategy' },
+    { id: 'bottomline', label: '🏁 Bottom Line' }
+  ];
+
+  container.innerHTML += `
+  <!-- PRINT COVER — hidden on screen, shown when printing -->
+  <div class="print-cover">
+    <h1>${s.firstName} ${s.lastName} — Academic Plan</h1>
+    <p>${s.schoolName} · ${s.town}, ${s.state} · Entering Grade ${parseInt(s.currentGrade)+1} → Grade 12</p>
+    <span class="print-badge">${state.collegeTier}</span>
+    ${state.careerGoal ? `<span class="print-badge" style="margin-left:6pt">${state.careerGoal}</span>` : ''}
+  </div>
+
+  <div class="step-header">
+    <div class="step-eyebrow">Academic Plan Complete</div>
+    <h1 class="step-title">${s.firstName} ${s.lastName}</h1>
+    <p class="step-subtitle">${s.schoolName} · ${s.town}, ${s.state} · Entering Grade ${parseInt(s.currentGrade)+1} → Grade 12 · ${state.collegeTier}</p>
+  </div>
+
+  <div class="action-bar">
+    <span class="action-bar-label">Plan Actions</span>
+    <button class="btn btn-secondary" onclick="printPlan()" style="font-size:0.8rem;padding:0.5rem 1rem" title="Downloads an HTML file — open it in your browser to print or save as PDF">⬇ Download & Print</button>
+    <button class="btn btn-secondary" onclick="startOver()" style="font-size:0.8rem;padding:0.5rem 1rem">↺ New Plan</button>
+  </div>
+
+  <div class="output-nav" id="outputNav">
+    ${tabs.map((t, i) => `<button class="output-tab ${i===0?'active':''}" onclick="switchTab('${t.id}',this)">${t.label}</button>`).join('')}
+  </div>
+
+  <!-- SNAPSHOT -->
+  <div class="output-section active card" id="tab-snapshot">
+    <div class="section-divider"><h3>Student Snapshot</h3><div class="divider-line"></div></div>
+    <div class="snapshot-grid">
+      <div class="snapshot-item"><div class="snapshot-label">Strengths</div><div class="snapshot-value">${p.snapshot?.strengths || '—'}</div></div>
+      <div class="snapshot-item"><div class="snapshot-label">Watch Areas</div><div class="snapshot-value">${p.snapshot?.watchAreas || '—'}</div></div>
+      <div class="snapshot-item"><div class="snapshot-label">Math Level</div><div class="snapshot-value">${p.snapshot?.mathLevel || '—'}</div></div>
+      <div class="snapshot-item"><div class="snapshot-label">Science Status</div><div class="snapshot-value">${p.snapshot?.scienceStatus || '—'}</div></div>
+      <div class="snapshot-item"><div class="snapshot-label">Language</div><div class="snapshot-value">${p.snapshot?.languageStatus || '—'}</div></div>
+      <div class="snapshot-item" style="background:var(--teal-light);border-color:#7dd3fc">
+        <div class="snapshot-label" style="color:var(--teal)">Target Tier</div>
+        <div class="snapshot-value">${state.collegeTier}</div>
+      </div>
+    </div>
+
+    ${p.snapshot?.apResearchEligible ? `
+    <div class="alert-box alert-green" style="margin-bottom:1.25rem">
+      <div class="alert-title">⭐ AP Research Eligible — High Priority</div>
+      <p style="font-size:0.88rem">${state.student.firstName} completed AP Seminar and is eligible for <strong>AP Research</strong> — the second course of the AP Capstone Diploma. This must be scheduled in the next available year as an elective slot.</p>
+    </div>` : ''}
+
+    <p style="font-size:0.92rem;line-height:1.7;color:var(--text2);padding:1.1rem 1.25rem;background:var(--cream);border-radius:6px;border:1px solid var(--border);margin-bottom:1.5rem">${p.snapshot?.overallAssessment || ''}</p>
+
+    ${Array.isArray(p.snapshot?.completedCourses) && p.snapshot.completedCourses.length ? `
+    <div class="section-divider"><h3>Completed & In-Progress Courses</h3><div class="divider-line"></div></div>
+    <p style="font-size:0.85rem;color:var(--text3);margin-bottom:0.75rem">All courses extracted from transcript. None of these will be re-recommended.</p>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+    <table class="plan-table">
+      <thead><tr><th>Year</th><th>Subject Slot</th><th>Course</th><th>Grade</th></tr></thead>
+      <tbody>
+        ${[...p.snapshot.completedCourses]
+          .sort((a,b) => (a.year||'').localeCompare(b.year||''))
+          .map(c => {
+            const grade = c.grade || '—';
+            const gradeColor = ['A+','A','A-'].includes(grade) ? 'var(--green)' :
+                               ['B+','B','B-'].includes(grade) ? 'var(--teal)' :
+                               ['C+','C','C-'].includes(grade) ? 'var(--gold)' :
+                               grade === '—' ? 'var(--text3)' : 'var(--red)';
+            return `<tr>
+              <td><span class="tag tag-cp">${c.year||'—'}</span></td>
+              <td style="color:var(--text3);font-size:0.82rem">${c.subject||'—'}</td>
+              <td><strong>${c.course||'—'}</strong></td>
+              <td><span style="font-weight:700;color:${gradeColor};font-size:1rem">${grade}</span></td>
+            </tr>`;
+          }).join('')}
+      </tbody>
+    </table>
+    </div>` : ''}
+
+    ${p.schoolSpecificNotes?.length ? `
+    <div class="alert-box alert-gold" style="margin-top:1.25rem">
+      <div class="alert-title">📋 ${s.schoolName} — Key Notes from Program of Studies</div>
+      <ul>${p.schoolSpecificNotes.map(n => `<li>${n}</li>`).join('')}</ul>
+    </div>` : ''}
+  </div>
+
+  <!-- GRADE PLANS -->
+  ${(p.gradePlans || []).map(g => renderGradeTab(g)).join('')}
+
+  <!-- ROADMAP -->
+  <div class="output-section card" id="tab-roadmap">
+    <div class="section-divider"><h3>4-Year Course Roadmap</h3><div class="divider-line"></div></div>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+    <table class="plan-table">
+      <thead><tr>
+        <th>Subject</th><th>Grade 9</th><th>Grade 10</th><th>Grade 11</th><th>Grade 12</th>
+      </tr></thead>
+      <tbody>
+        ${(p.roadmap || []).map(r => `
+        <tr>
+          <td><strong>${r.subject}</strong></td>
+          <td style="${r.highlight==='g9'?'color:var(--green);font-weight:600':''}">${r.g9||'—'}</td>
+          <td style="${r.highlight==='g10'?'color:var(--green);font-weight:600':''}">${r.g10||'—'}</td>
+          <td style="${r.highlight==='g11'?'color:var(--green);font-weight:600':''}">${r.g11||'—'}</td>
+          <td style="${r.highlight==='g12'?'color:var(--green);font-weight:600':''}">${r.g12||'—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+
+    ${p.thresholds?.length ? `
+    <div class="section-divider" style="margin-top:2rem"><h3>Critical Grade Thresholds</h3><div class="divider-line"></div></div>
+    <p style="font-size:0.88rem;color:var(--text3);margin-bottom:1rem">These grades unlock or close doors for subsequent years. Missing a threshold can cascade into lost opportunities.</p>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+    <table class="plan-table">
+      <thead><tr><th>Course</th><th>Year</th><th>Grade Needed</th><th>What It Unlocks</th><th>If Missed</th></tr></thead>
+      <tbody>
+        ${p.thresholds.map(t => `
+        <tr>
+          <td><strong>${t.course}</strong></td>
+          <td><span class="tag tag-cp">${t.year}</span></td>
+          <td><span style="color:var(--green);font-weight:600">${t.gradeNeeded}+</span></td>
+          <td>${t.unlocks}</td>
+          <td style="color:var(--red);font-size:0.84rem">${t.consequence}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>` : ''}
+  </div>
+
+  <!-- STRATEGY -->
+  <div class="output-section card" id="tab-rigor">
+    <div class="section-divider"><h3>Course Rigor Strategy</h3><div class="divider-line"></div></div>
+    ${p.rigorStrategy ? `
+    ${p.rigorStrategy.careerTrackStrategy ? renderStrategyBlock('🎯 Career Track Strategy', p.rigorStrategy.careerTrackStrategy, 'orange') : ''}
+    ${renderStrategyBlock('📝 English Strategy', p.rigorStrategy.englishPriority, 'teal')}
+    ${renderStrategyBlock('📐 Math Strategy', p.rigorStrategy.mathStrategy, 'navy')}
+    ${renderStrategyBlock('🔬 Science Strategy', p.rigorStrategy.scienceStrategy, 'green')}
+    ${renderStrategyBlock('🌍 Language Strategy', p.rigorStrategy.languageStrategy, 'purple')}
+    ${p.rigorStrategy.keyInsight ? `
+    <div class="alert-box alert-gold" style="margin-top:1.5rem">
+      <div class="alert-title">⭐ Key Strategic Insight</div>
+      <p style="font-size:0.9rem;line-height:1.6">${p.rigorStrategy.keyInsight}</p>
+    </div>` : ''}` : '<p>Strategy data not available.</p>'}
+  </div>
+
+  <!-- BOTTOM LINE -->
+  <div class="output-section card" id="tab-bottomline">
+    <div style="background:var(--navy);border-radius:8px;padding:2rem;color:#fff;margin-bottom:1.5rem">
+      <h2 style="font-family:'Libre Baskerville',serif;font-size:1.8rem;font-weight:700;margin-bottom:0.75rem;color:#fff">${p.bottomLine?.title || 'Bottom Line'}</h2>
+      <p style="color:rgba(255,255,255,0.8);font-size:0.95rem;line-height:1.7;margin-bottom:1.5rem">${p.bottomLine?.summary || ''}</p>
+      <div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:1.25rem">
+        <p style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.5);margin-bottom:0.9rem;font-weight:600">Five Most Important Actions</p>
+        ${(p.bottomLine?.actions || []).map((a, i) => `
+        <div style="display:flex;gap:0.75rem;align-items:flex-start;margin-bottom:0.65rem">
+          <span style="background:var(--gold);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;margin-top:1px">${i+1}</span>
+          <p style="font-size:0.9rem;color:rgba(255,255,255,0.9);line-height:1.5">${a}</p>
+        </div>`).join('')}
+      </div>
+    </div>
+    <p class="disclaimer">This plan was generated based on available transcript data${state.posFound ? ' and the school\'s Program of Studies' : ''}. All course recommendations should be confirmed with your school counselor before finalizing your schedule. Prerequisites and course availability may have changed since this plan was generated.</p>
+  </div>
+
+  <!-- PRINT DISCLAIMER — hidden on screen -->
+  <div class="print-disclaimer">
+    Generated by AcademicPlan · No student data or transcripts are stored · All recommendations should be verified with your school counselor · ${new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})}
+  </div>`;
+}
+
+function renderGradeTab(g) {
+  const colorMap = { '9': 'var(--navy)', '10': 'var(--teal)', '11': 'var(--purple)', '12': '#a16207' };
+  const color = colorMap[g.grade] || 'var(--navy)';
+  const alertClassMap = { 'teal': 'alert-teal', 'green': 'alert-green', 'gold': 'alert-gold', 'purple': 'alert-purple', 'red': 'alert-red' };
+  const alertClass = alertClassMap[g.alertType] || 'alert-teal';
+
+  // Support both new schedule[] format and old courses[] format
+  const rows = g.schedule || g.courses || [];
+
+  // Slot color coding
+  const slotColors = {
+    'English':        '#dbeafe',
+    'Mathematics':    '#d1fae5',
+    'Science':        '#fef3c7',
+    'Social Studies': '#ede9fe',
+    'World Language': '#fce7f3',
+    'Elective 1':     '#f0f9ff',
+    'Elective 2':     '#f0f9ff',
+    'Elective 3':     '#e0f0ff',  // converted core slot — slightly different shade
+    'Elective 4':     '#e0f0ff',
+    'PE/Health':      '#f1f5f9'
+  };
+  const slotTextColors = {
+    'English':        '#1e40af',
+    'Mathematics':    '#065f46',
+    'Science':        '#92400e',
+    'Social Studies': '#4c1d95',
+    'World Language': '#9d174d',
+    'Elective 1':     '#0369a1',
+    'Elective 2':     '#0369a1',
+    'Elective 3':     '#0c4a8a',
+    'Elective 4':     '#0c4a8a',
+    'PE/Health':      '#475569'
+  };
+
+  return `
+  <div class="output-section card" id="tab-grade${g.grade}">
+    <div style="background:${color};border-radius:8px;padding:1.1rem 1.4rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem">
+      <div>
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.6);font-weight:600;margin-bottom:0.2rem">Grade ${g.grade} · ${g.year}</div>
+        <div style="font-size:1.1rem;font-weight:600;color:#fff">${g.theme}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.15);padding:0.4rem 1rem;border-radius:100px;font-size:0.8rem;color:#fff;font-weight:500">${g.apCount} AP${g.apCount !== '1' ? 's' : ''} this year</div>
+    </div>
+
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+    <table class="plan-table">
+      <thead><tr>
+        <th style="width:130px">Slot</th>
+        <th>Course</th>
+        <th style="width:80px">Level</th>
+        <th>Prerequisite</th>
+        <th>Notes</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(c => {
+          const slot = c.slot || c.subject || '—';
+          const course = c.course || '—';
+          const level = c.level || 'CP';
+          const bg = slotColors[slot] || '#f8f9fa';
+          const fg = slotTextColors[slot] || '#374151';
+          const isHighPriority = c.priority === 'high';
+          const isPE = slot === 'PE/Health';
+          const isStudyHall = (c.course||'').toLowerCase() === 'study hall';
+          const isConverted = !!c._convertedFromSubject;
+          const slotBg = slotColors[slot] || '#f8f9fa';
+          const slotFg = slotTextColors[slot] || '#374151';
+          return `<tr>
+            <td>
+              <span style="display:inline-block;padding:0.2rem 0.6rem;border-radius:100px;background:${slotBg};color:${slotFg};font-size:0.72rem;font-weight:700;letter-spacing:0.04em;white-space:nowrap">
+                ${slot}${isConverted ? ' <span style="font-size:0.6rem;opacity:0.6">(freed)</span>' : ''}
+              </span>
+            </td>
+            <td style="${isHighPriority?'color:var(--green);font-weight:600':''}${isPE||isStudyHall?'color:var(--text3);font-style:italic':''}">${isHighPriority?'⭐ ':''}${isStudyHall ? '📚 Study Hall' : course}</td>
+            <td>${isStudyHall || isPE ? '' : `<span class="tag ${level==='AP'?'tag-ap':level==='Honors'?'tag-honors':'tag-cp'}">${level}</span>`}</td>
+            <td style="font-size:0.82rem;color:var(--text3)">${c.prerequisite||'—'}</td>
+            <td style="font-size:0.82rem;color:var(--text2)">${c.notes||'—'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+
+    ${g.alertTitle ? `
+    <div class="alert-box ${alertClass}" style="margin-top:1.25rem">
+      <div class="alert-title">${g.alertTitle}</div>
+      <ul>${(g.alertItems||[]).map(i => `<li>${i}</li>`).join('')}</ul>
+    </div>` : ''}
+  </div>`;
+}
+
+
+function renderStrategyBlock(title, content, color) {
+  const colorMap = {
+    teal:   ['var(--teal-light)', 'var(--teal)'],
+    navy:   ['#e8edf5', 'var(--navy)'],
+    green:  ['var(--green-light)', 'var(--green)'],
+    purple: ['#ede9fe', '#4c1d95'],
+    orange: ['var(--orange-light)', 'var(--orange)']
+  };
+  const [bg, fg] = colorMap[color] || colorMap.teal;
+  return `
+  <div style="margin-bottom:1.25rem">
+    <h4 style="font-weight:600;font-size:0.9rem;color:${fg};margin-bottom:0.5rem">${title}</h4>
+    <p style="font-size:0.9rem;line-height:1.7;color:var(--text2);padding:1rem 1.2rem;background:${bg};border-radius:6px">${content || '—'}</p>
+  </div>`;
+}
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.output-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.output-tab').forEach(t => t.classList.remove('active'));
+  const section = document.getElementById('tab-' + id);
+  if (section) section.classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({ top: 120, behavior: 'smooth' });
+}
+
+// ── UTILITIES ──
+function goBack() {
+  if (state.currentStep > 0) {
+    state.currentStep--;
+    if (state.currentStep === 2) state.posSearched = false;
+    render();
+  }
+}
+
+function startOver() {
+  Object.assign(state, {
+    currentStep: 0, student: {}, transcripts: [],
+    gradeTranscripts: {}, extraTranscripts: [],
+    programOfStudies: null, posBase64: null, posFound: false, posSearched: false,
+    interests: [], collegeTier: '', careerGoal: '', plan: null
+  });
+  render();
+}
+
+function showToast(msg, type = 'info') {
+  const existing = document.getElementById('toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'toast';
+  const colors = { error: '#8b1a1a', info: 'var(--teal)', success: 'var(--green)' };
+  toast.style.cssText = `position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:${colors[type]};color:#fff;padding:0.75rem 1.5rem;border-radius:8px;font-size:0.9rem;font-weight:500;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,0.2);animation:fadeSlideUp 0.3s ease;max-width:90vw;text-align:center`;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
+}
+
+// ── INIT ──
+render();
+</script>
+</body>
+</html>
