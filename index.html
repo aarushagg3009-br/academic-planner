@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -911,8 +912,8 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 // ── API PROXY CONFIGURATION ──
 // When running in Claude.ai: leave as 'https://api.anthropic.com' (handled by Claude.ai)
 // When self-hosting: replace with your Cloudflare Worker URL, e.g.:
-   const PROXY_URL = 'https://academic-plan-proxy.academicplanner.workers.dev';
-//const PROXY_URL = 'https://api.anthropic.com';
+//   const PROXY_URL = 'https://academic-plan-proxy.YOUR-SUBDOMAIN.workers.dev';
+const PROXY_URL = 'https://api.anthropic.com';
 
 const state = {
   currentStep: 0,
@@ -3287,11 +3288,17 @@ Return ONLY valid JSON:
 
     updateStep(6);
 
-    // CALL 2: Remaining grades + roadmap + strategy + bottomLine
+    // Brief pause between calls to avoid hitting the per-minute token rate limit
+    await new Promise(resolve => setTimeout(resolve, 3000)); + roadmap + strategy + bottomLine
+    // Do NOT re-send transcript images on Call 2 — causes 429 rate limit errors.
+    // Use text summary of completed courses from Call 1 instead.
     const gradesRemaining = batch2Grades.length > 0 ? batch2Grades.join(', ') : 'none';
-    const prompt2 = prompt + `\n\nSECOND CALL — grades ${batch1Grades.join(',')} already generated. Generate ONLY:\n- "gradePlans" for grades: ${gradesRemaining}\n- "roadmap" (complete 4-year table)\n- "rigorStrategy" (complete)\n- "schoolSpecificNotes" (complete)\n- "posRulesApplied": true\n- "bottomLine" (complete)\n\nReturn ONLY valid JSON with exactly these keys.`;
-
-    const parts2 = [...contentParts.slice(0, -1), { type: 'text', text: prompt2 }];
+    const completedSummary = Array.isArray(part1.snapshot?.completedCourses) && part1.snapshot.completedCourses.length
+      ? 'COMPLETED COURSES FROM TRANSCRIPT (do NOT re-recommend):\n' +
+        part1.snapshot.completedCourses.map(c => `- ${c.year||''} ${c.subject||''}: ${c.course} (${c.grade||''})`).join('\n')
+      : 'No completed courses found.';
+    const prompt2 = prompt + '\n\n' + completedSummary + `\n\nSECOND CALL — grades ${batch1Grades.join(',')} already generated. Generate ONLY:\n- "gradePlans" for grades: ${gradesRemaining}\n- "roadmap" (complete 4-year table)\n- "rigorStrategy" (complete)\n- "schoolSpecificNotes" (complete)\n- "posRulesApplied": true\n- "bottomLine" (complete)\n\nReturn ONLY valid JSON with exactly these keys.`;
+    const parts2 = [{ type: 'text', text: prompt2 }];
     const raw2 = await callPlanApi(parts2);
     const part2 = await parsePlanResponse(raw2);
 
